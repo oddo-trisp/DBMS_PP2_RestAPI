@@ -1,23 +1,23 @@
 package gr.uoa.di.dbm.restapi.controller;
 
-import gr.uoa.di.dbm.restapi.service.ServiceRequestServiceImpl;
+import gr.uoa.di.dbm.restapi.service.ParserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/test")
-public class ServiceRequestController {
-    private final ServiceRequestServiceImpl serviceRequestServiceImpl;
+@RequestMapping("/parser")
+public class ParserController {
+    private final ParserServiceImpl ParserServiceImpl;
 
     @Autowired
-    public ServiceRequestController(ServiceRequestServiceImpl serviceRequestServiceImpl) {
-        this.serviceRequestServiceImpl = serviceRequestServiceImpl;
+    public ParserController(ParserServiceImpl ParserServiceImpl) {
+        this.ParserServiceImpl = ParserServiceImpl;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public void modifyPetById(){
-        serviceRequestServiceImpl.parseData();
+        ParserServiceImpl.parseData();
     }
 }

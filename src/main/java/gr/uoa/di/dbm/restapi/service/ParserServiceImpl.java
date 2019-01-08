@@ -1,11 +1,14 @@
-package gr.uoa.di.dbm.restapi;
+package gr.uoa.di.dbm.restapi.service;
 
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Position;
 import gr.uoa.di.dbm.restapi.entity.*;
+import gr.uoa.di.dbm.restapi.repo.ServiceRequestRepository;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.io.Reader;
@@ -17,11 +20,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
-public class ParserCSV {
-
-    private List<ServiceRequest> serviceRequests = new ArrayList<>();
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+@Service
+public class ParserServiceImpl {
+    private final ServiceRequestRepository serviceRequestRepository;
+    private List<ServiceRequest> serviceRequests;
+    private SimpleDateFormat dateFormat;
 
     private static final String GRAFFITY_REMOVAL = "Datasets/311-service-requests-graffiti-removal.csv";
     private static final String ABANDONED_BUILDING = "Datasets/311-service-requests-vacant-and-abandoned-buildings-reported.csv";
@@ -35,8 +38,17 @@ public class ParserCSV {
     private static final String ALLEY_LIGHTS_OUT = "Datasets/311-service-requests-alley-lights-out.csv";
     private static final String LIGHTS_OUT_ALL = "Datasets/311-service-requests-street-lights-all-out.csv";
     private static final String LIGHTS_OUT_ONE = "Datasets/311-service-requests-street-lights-one-out.csv";
+    private static final int BATCH_SIZE = 100000;
 
-    public List<ServiceRequest> parseData(){
+    @Autowired
+    public ParserServiceImpl(ServiceRequestRepository serviceRequestRepository) {
+        this.serviceRequestRepository = serviceRequestRepository;
+        this.serviceRequests = new ArrayList<>();
+        this.dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    }
+
+
+    public void parseData(){
         graffityRemovalParser();
         abandonedBuildingsParser();
         abandonedVehiclesParser();
@@ -49,8 +61,6 @@ public class ParserCSV {
         alleyLightsOutParser();
         streetLightsOutAllParser();
         streetLightsOutOneParser();
-
-        return serviceRequests;
     }
 
     private void graffityRemovalParser(){
@@ -63,10 +73,7 @@ public class ParserCSV {
                     .withIgnoreHeaderCase()
                     .withTrim());
 
-            boolean isFirst = true;
-
             for (CSVRecord csvRecord : csvParser) {
-                System.out.println(csvRecord);
 
                 // Accessing values by Header names
                 GraffityRemoval graffityRemoval = new GraffityRemoval();
@@ -83,8 +90,10 @@ public class ParserCSV {
                 location.setSsa(csvRecord.get("SSA"));
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
-                graffityRemoval.setCompletionDate(new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()));
-                graffityRemoval.setCreateDate(new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()));
+                graffityRemoval.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                graffityRemoval.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
                 graffityRemoval.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 graffityRemoval.setStatus(csvRecord.get("Status"));
                 graffityRemoval.setRequestType(csvRecord.get("Type of Service Request"));
@@ -93,11 +102,13 @@ public class ParserCSV {
 
                 graffityRemoval.setLocation(location);
 
-                if(isFirst) {
-                    serviceRequests.add(graffityRemoval);
-                    break;
-                }
+                serviceRequests.add(graffityRemoval);
+
+                //Write on batch size
+                saveOnBatchSize();
             }
+            //Write rest data
+            saveRestData();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -114,10 +125,7 @@ public class ParserCSV {
                     .withIgnoreHeaderCase()
                     .withTrim());
 
-            boolean isFirst = true;
-
             for (CSVRecord csvRecord : csvParser) {
-                System.out.println(csvRecord);
 
                 // Accessing values by Header names
                 AbandonnedBuilding abandonnedBuilding = new AbandonnedBuilding();
@@ -138,7 +146,8 @@ public class ParserCSV {
                 location.setWard(csvRecord.get("Ward"));
                 location.setZipCode(csvRecord.get("ZIP CODE"));
 
-                abandonnedBuilding.setCreateDate(new Timestamp(dateFormat.parse(csvRecord.get("DATE SERVICE REQUEST WAS RECEIVED")).getTime()));
+                abandonnedBuilding.setCreateDate(!StringUtils.isEmpty(csvRecord.get("DATE SERVICE REQUEST WAS RECEIVED")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("DATE SERVICE REQUEST WAS RECEIVED")).getTime()) : null);
                 abandonnedBuilding.setServiceRequestNo(csvRecord.get("SERVICE REQUEST NUMBER"));
                 abandonnedBuilding.setRequestType(csvRecord.get("SERVICE REQUEST TYPE"));
                 abandonnedBuilding.setBuildingLocationOnTheLot(csvRecord.get("LOCATION OF BUILDING ON THE LOT (IF GARAGE, CHANGE TYPE CODE TO BGD)."));
@@ -151,11 +160,14 @@ public class ParserCSV {
 
                 abandonnedBuilding.setLocation(location);
 
-                if(isFirst) {
-                    serviceRequests.add(abandonnedBuilding);
-                    break;
-                }
+                serviceRequests.add(abandonnedBuilding);
+
+                //Write on batch size
+               saveOnBatchSize();
             }
+
+            //Write rest data
+            saveRestData();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -172,10 +184,7 @@ public class ParserCSV {
                     .withIgnoreHeaderCase()
                     .withTrim());
 
-            boolean isFirst = true;
-
             for (CSVRecord csvRecord : csvParser) {
-                System.out.println(csvRecord);
 
                 // Accessing values by Header names
                 AbandonnedVehicle abandonnedVehicle = new AbandonnedVehicle();
@@ -192,8 +201,10 @@ public class ParserCSV {
                 location.setSsa(csvRecord.get("SSA"));
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
-                abandonnedVehicle.setCompletionDate(new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()));
-                abandonnedVehicle.setCreateDate(new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()));
+                abandonnedVehicle.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                abandonnedVehicle.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
                 abandonnedVehicle.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 abandonnedVehicle.setStatus(csvRecord.get("Status"));
                 abandonnedVehicle.setRequestType(csvRecord.get("Type of Service Request"));
@@ -207,120 +218,14 @@ public class ParserCSV {
 
                 abandonnedVehicle.setLocation(location);
 
-                if(isFirst) {
-                    serviceRequests.add(abandonnedVehicle);
-                    break;
-                }
+                serviceRequests.add(abandonnedVehicle);
+
+                //Write on batch size
+                saveOnBatchSize();
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void potHolesReportedParser(){
-        try {
-
-            Reader reader;
-            reader = Files.newBufferedReader(Paths.get(POT_HOLES_REPORTED));
-            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
-                    .withFirstRecordAsHeader()
-                    .withIgnoreHeaderCase()
-                    .withTrim());
-
-            boolean isFirst = true;
-
-            for (CSVRecord csvRecord : csvParser) {
-                System.out.println(csvRecord);
-
-                // Accessing values by Header names
-                PotHolesReported potHolesReported = new PotHolesReported();
-                Location location = new Location();
-
-                location.setCoordinates(getCoordinates(csvRecord,"X COORDINATE", "Y COORDINATE" ));
-                location.setCommunityArea(csvRecord.get("Community Area"));
-                location.setLatitude(!StringUtils.isEmpty(csvRecord.get("LATITUDE")) ? Double.parseDouble(csvRecord.get("LATITUDE")) : null);
-                location.setLongitude(!StringUtils.isEmpty(csvRecord.get("LONGITUDE")) ? Double.parseDouble(csvRecord.get("LONGITUDE")) : null);
-                location.setLocationJson(csvRecord.get("LOCATION"));
-                location.setPoliceDistrict(csvRecord.get("Police District"));
-                location.setAddress(csvRecord.get("STREET ADDRESS"));
-                location.setWard(csvRecord.get("Ward"));
-                location.setSsa(csvRecord.get("SSA"));
-                location.setZipCode(csvRecord.get("ZIP"));
-
-                potHolesReported.setCompletionDate(new Timestamp(dateFormat.parse(csvRecord.get("COMPLETION DATE")).getTime()));
-                potHolesReported.setCreateDate(new Timestamp(dateFormat.parse(csvRecord.get("CREATION DATE")).getTime()));
-                potHolesReported.setServiceRequestNo(csvRecord.get("SERVICE REQUEST NUMBER"));
-                potHolesReported.setStatus(csvRecord.get("STATUS"));
-                potHolesReported.setRequestType(csvRecord.get("TYPE OF SERVICE REQUEST"));
-                potHolesReported.setCurrentActivity(csvRecord.get("CURRENT ACTIVITY"));
-                potHolesReported.setMostRecentAction(csvRecord.get("MOST RECENT ACTION"));
-                potHolesReported.setHolesNum(!StringUtils.isEmpty(csvRecord.get("NUMBER OF POTHOLES FILLED ON BLOCK"))
-                        ? Long.parseLong(csvRecord.get("NUMBER OF POTHOLES FILLED ON BLOCK")) : null);
-
-                potHolesReported.setLocation(location);
-
-                if(isFirst) {
-                    serviceRequests.add(potHolesReported);
-                    break;
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void rodentBaitingParser(){
-        try {
-
-            Reader reader;
-            reader = Files.newBufferedReader(Paths.get(RODENT_BAITING));
-            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
-                    .withFirstRecordAsHeader()
-                    .withIgnoreHeaderCase()
-                    .withTrim());
-
-            boolean isFirst = true;
-
-            for (CSVRecord csvRecord : csvParser) {
-                System.out.println(csvRecord);
-
-                // Accessing values by Header names
-                RodentBaiting rodentBaiting = new RodentBaiting();
-                Location location = new Location();
-
-                location.setCoordinates(getCoordinates(csvRecord,"X Coordinate", "Y Coordinate" ));
-                location.setCommunityArea(csvRecord.get("Community Area"));
-                location.setLatitude(!StringUtils.isEmpty(csvRecord.get("Latitude")) ? Double.parseDouble(csvRecord.get("Latitude")) : null);
-                location.setLongitude(!StringUtils.isEmpty(csvRecord.get("Longitude")) ? Double.parseDouble(csvRecord.get("Longitude")) : null);
-                location.setLocationJson(csvRecord.get("Location"));
-                location.setPoliceDistrict(csvRecord.get("Police District"));
-                location.setAddress(csvRecord.get("Street Address"));
-                location.setWard(csvRecord.get("Ward"));
-                location.setZipCode(csvRecord.get("ZIP Code"));
-
-                rodentBaiting.setCompletionDate(new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()));
-                rodentBaiting.setCreateDate(new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()));
-                rodentBaiting.setServiceRequestNo(csvRecord.get("Service Request Number"));
-                rodentBaiting.setStatus(csvRecord.get("Status"));
-                rodentBaiting.setRequestType(csvRecord.get("Type of Service Request"));
-                rodentBaiting.setCurrentActivity(csvRecord.get("Current Activity"));
-                rodentBaiting.setMostRecentAction(csvRecord.get("Most Recent Action"));
-                rodentBaiting.setBaitedNum(!StringUtils.isEmpty(csvRecord.get("Number of Premises Baited"))
-                        ? Long.parseLong(csvRecord.get("Number of Premises Baited")) : null);
-                rodentBaiting.setGarbageNum(!StringUtils.isEmpty(csvRecord.get("Number of Premises with Garbage"))
-                        ? Long.parseLong(csvRecord.get("Number of Premises with Garbage")) : null);
-                rodentBaiting.setGarbageNum(!StringUtils.isEmpty(csvRecord.get("Number of Premises with Rats"))
-                        ? Long.parseLong(csvRecord.get("Number of Premises with Rats")) : null);
-
-                rodentBaiting.setLocation(location);
-
-                if(isFirst) {
-                    serviceRequests.add(rodentBaiting);
-                    break;
-                }
-            }
+            //Write rest data
+           saveRestData();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -337,10 +242,7 @@ public class ParserCSV {
                     .withIgnoreHeaderCase()
                     .withTrim());
 
-            boolean isFirst = true;
-
             for (CSVRecord csvRecord : csvParser) {
-                System.out.println(csvRecord);
 
                 // Accessing values by Header names
                 GarbageCart garbageCart = new GarbageCart();
@@ -357,23 +259,141 @@ public class ParserCSV {
                 location.setSsa(csvRecord.get("SSA"));
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
-                garbageCart.setCompletionDate(new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()));
-                garbageCart.setCreateDate(new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()));
+                garbageCart.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                garbageCart.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
                 garbageCart.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 garbageCart.setStatus(csvRecord.get("Status"));
                 garbageCart.setRequestType(csvRecord.get("Type of Service Request"));
                 garbageCart.setCurrentActivity(csvRecord.get("Current Activity"));
                 garbageCart.setMostRecentAction(csvRecord.get("Most Recent Action"));
                 garbageCart.setCartsDelivered(!StringUtils.isEmpty(csvRecord.get("Number of Black Carts Delivered"))
-                        ? Long.parseLong(csvRecord.get("Number of Black Carts Delivered")) : null);
+                        ? Double.valueOf(csvRecord.get("Number of Black Carts Delivered")).longValue() : null);
 
                 garbageCart.setLocation(location);
 
-                if(isFirst) {
-                    serviceRequests.add(garbageCart);
-                    break;
-                }
+                serviceRequests.add(garbageCart);
+
+                //Write on batch size
+                saveOnBatchSize();
             }
+
+            //Write rest data
+            saveRestData();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void potHolesReportedParser(){
+        try {
+
+            Reader reader;
+            reader = Files.newBufferedReader(Paths.get(POT_HOLES_REPORTED));
+            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
+                    .withFirstRecordAsHeader()
+                    .withIgnoreHeaderCase()
+                    .withTrim());
+
+            for (CSVRecord csvRecord : csvParser) {
+
+                // Accessing values by Header names
+                PotHolesReported potHolesReported = new PotHolesReported();
+                Location location = new Location();
+
+                location.setCoordinates(getCoordinates(csvRecord,"X COORDINATE", "Y COORDINATE" ));
+                location.setCommunityArea(csvRecord.get("Community Area"));
+                location.setLatitude(!StringUtils.isEmpty(csvRecord.get("LATITUDE")) ? Double.parseDouble(csvRecord.get("LATITUDE")) : null);
+                location.setLongitude(!StringUtils.isEmpty(csvRecord.get("LONGITUDE")) ? Double.parseDouble(csvRecord.get("LONGITUDE")) : null);
+                location.setLocationJson(csvRecord.get("LOCATION"));
+                location.setPoliceDistrict(csvRecord.get("Police District"));
+                location.setAddress(csvRecord.get("STREET ADDRESS"));
+                location.setWard(csvRecord.get("Ward"));
+                location.setSsa(csvRecord.get("SSA"));
+                location.setZipCode(csvRecord.get("ZIP"));
+
+                potHolesReported.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("COMPLETION DATE")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("COMPLETION DATE")).getTime()) : null);
+                potHolesReported.setCreateDate(!StringUtils.isEmpty(csvRecord.get("CREATION DATE")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("CREATION DATE")).getTime()) : null);
+                potHolesReported.setServiceRequestNo(csvRecord.get("SERVICE REQUEST NUMBER"));
+                potHolesReported.setStatus(csvRecord.get("STATUS"));
+                potHolesReported.setRequestType(csvRecord.get("TYPE OF SERVICE REQUEST"));
+                potHolesReported.setCurrentActivity(csvRecord.get("CURRENT ACTIVITY"));
+                potHolesReported.setMostRecentAction(csvRecord.get("MOST RECENT ACTION"));
+                potHolesReported.setHolesNum(!StringUtils.isEmpty(csvRecord.get("NUMBER OF POTHOLES FILLED ON BLOCK"))
+                        ? Double.valueOf(csvRecord.get("NUMBER OF POTHOLES FILLED ON BLOCK")).longValue() : null);
+
+                potHolesReported.setLocation(location);
+
+                serviceRequests.add(potHolesReported);
+
+                //Write on batch size
+                saveOnBatchSize();
+            }
+
+            //Write rest data
+            saveRestData();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void rodentBaitingParser(){
+        try {
+
+            Reader reader;
+            reader = Files.newBufferedReader(Paths.get(RODENT_BAITING));
+            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
+                    .withFirstRecordAsHeader()
+                    .withIgnoreHeaderCase()
+                    .withTrim());
+
+            for (CSVRecord csvRecord : csvParser) {
+
+                // Accessing values by Header names
+                RodentBaiting rodentBaiting = new RodentBaiting();
+                Location location = new Location();
+
+                location.setCoordinates(getCoordinates(csvRecord,"X Coordinate", "Y Coordinate" ));
+                location.setCommunityArea(csvRecord.get("Community Area"));
+                location.setLatitude(!StringUtils.isEmpty(csvRecord.get("Latitude")) ? Double.parseDouble(csvRecord.get("Latitude")) : null);
+                location.setLongitude(!StringUtils.isEmpty(csvRecord.get("Longitude")) ? Double.parseDouble(csvRecord.get("Longitude")) : null);
+                location.setLocationJson(csvRecord.get("Location"));
+                location.setPoliceDistrict(csvRecord.get("Police District"));
+                location.setAddress(csvRecord.get("Street Address"));
+                location.setWard(csvRecord.get("Ward"));
+                location.setZipCode(csvRecord.get("ZIP Code"));
+
+                rodentBaiting.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                rodentBaiting.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
+                rodentBaiting.setServiceRequestNo(csvRecord.get("Service Request Number"));
+                rodentBaiting.setStatus(csvRecord.get("Status"));
+                rodentBaiting.setRequestType(csvRecord.get("Type of Service Request"));
+                rodentBaiting.setCurrentActivity(csvRecord.get("Current Activity"));
+                rodentBaiting.setMostRecentAction(csvRecord.get("Most Recent Action"));
+                rodentBaiting.setBaitedNum(!StringUtils.isEmpty(csvRecord.get("Number of Premises Baited"))
+                        ? Double.valueOf(csvRecord.get("Number of Premises Baited")).longValue() : null);
+                rodentBaiting.setGarbageNum(!StringUtils.isEmpty(csvRecord.get("Number of Premises with Garbage"))
+                        ? Double.valueOf(csvRecord.get("Number of Premises with Garbage")).longValue() : null);
+                rodentBaiting.setGarbageNum(!StringUtils.isEmpty(csvRecord.get("Number of Premises with Rats"))
+                        ? Double.valueOf(csvRecord.get("Number of Premises with Rats")).longValue() : null);
+
+                rodentBaiting.setLocation(location);
+
+                serviceRequests.add(rodentBaiting);
+
+                //Write on batch size
+                saveOnBatchSize();
+            }
+
+            //Write rest data
+            saveRestData();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -390,10 +410,7 @@ public class ParserCSV {
                     .withIgnoreHeaderCase()
                     .withTrim());
 
-            boolean isFirst = true;
-
             for (CSVRecord csvRecord : csvParser) {
-                System.out.println(csvRecord);
 
                 // Accessing values by Header names
                 SanitationCodeComplaint sanitationCodeComplaint = new SanitationCodeComplaint();
@@ -409,8 +426,10 @@ public class ParserCSV {
                 location.setWard(csvRecord.get("Ward"));
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
-                sanitationCodeComplaint.setCompletionDate(new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()));
-                sanitationCodeComplaint.setCreateDate(new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()));
+                sanitationCodeComplaint.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                sanitationCodeComplaint.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
                 sanitationCodeComplaint.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 sanitationCodeComplaint.setStatus(csvRecord.get("Status"));
                 sanitationCodeComplaint.setRequestType(csvRecord.get("Type of Service Request"));
@@ -418,11 +437,14 @@ public class ParserCSV {
 
                 sanitationCodeComplaint.setLocation(location);
 
-                if(isFirst) {
-                    serviceRequests.add(sanitationCodeComplaint);
-                    break;
-                }
+                serviceRequests.add(sanitationCodeComplaint);
+
+                //Write on batch size
+                saveOnBatchSize();
             }
+
+            //Write rest data
+            saveRestData();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -439,10 +461,7 @@ public class ParserCSV {
                     .withIgnoreHeaderCase()
                     .withTrim());
 
-            boolean isFirst = true;
-
             for (CSVRecord csvRecord : csvParser) {
-                System.out.println(csvRecord);
 
                 // Accessing values by Header names
                 TreeDebri treeDebri = new TreeDebri();
@@ -458,8 +477,10 @@ public class ParserCSV {
                 location.setWard(csvRecord.get("Ward"));
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
-                treeDebri.setCompletionDate(new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()));
-                treeDebri.setCreateDate(new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()));
+                treeDebri.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                treeDebri.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
                 treeDebri.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 treeDebri.setStatus(csvRecord.get("Status"));
                 treeDebri.setRequestType(csvRecord.get("Type of Service Request"));
@@ -469,11 +490,14 @@ public class ParserCSV {
 
                 treeDebri.setLocation(location);
 
-                if(isFirst) {
-                    serviceRequests.add(treeDebri);
-                    break;
-                }
+                serviceRequests.add(treeDebri);
+
+                //Write on batch size
+                saveOnBatchSize();
             }
+
+            //Write rest data
+            saveRestData();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -490,10 +514,7 @@ public class ParserCSV {
                     .withIgnoreHeaderCase()
                     .withTrim());
 
-            boolean isFirst = true;
-
             for (CSVRecord csvRecord : csvParser) {
-                System.out.println(csvRecord);
 
                 // Accessing values by Header names
                 TrimTree trimTree = new TrimTree();
@@ -509,8 +530,10 @@ public class ParserCSV {
                 location.setWard(csvRecord.get("Ward"));
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
-                trimTree.setCompletionDate(new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()));
-                trimTree.setCreateDate(new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()));
+                trimTree.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                trimTree.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
                 trimTree.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 trimTree.setStatus(csvRecord.get("Status"));
                 trimTree.setRequestType(csvRecord.get("Type of Service Request"));
@@ -518,11 +541,14 @@ public class ParserCSV {
 
                 trimTree.setLocation(location);
 
-                if(isFirst) {
-                    serviceRequests.add(trimTree);
-                    break;
-                }
+                serviceRequests.add(trimTree);
+
+                //Write on batch size
+                saveOnBatchSize();
             }
+
+            //Write rest data
+            saveRestData();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -539,10 +565,7 @@ public class ParserCSV {
                     .withIgnoreHeaderCase()
                     .withTrim());
 
-            boolean isFirst = true;
-
             for (CSVRecord csvRecord : csvParser) {
-                System.out.println(csvRecord);
 
                 // Accessing values by Header names
                 AlleyLightsOut alleyLightsOut = new AlleyLightsOut();
@@ -558,18 +581,23 @@ public class ParserCSV {
                 location.setWard(csvRecord.get("Ward"));
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
-                alleyLightsOut.setCompletionDate(new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()));
-                alleyLightsOut.setCreateDate(new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()));
+                alleyLightsOut.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                alleyLightsOut.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
                 alleyLightsOut.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 alleyLightsOut.setStatus(csvRecord.get("Status"));
                 alleyLightsOut.setRequestType(csvRecord.get("Type of Service Request"));
                 alleyLightsOut.setLocation(location);
 
-                if(isFirst) {
-                    serviceRequests.add(alleyLightsOut);
-                    break;
-                }
+                serviceRequests.add(alleyLightsOut);
+
+                //Write on batch size
+                saveOnBatchSize();
             }
+
+            //Write rest data
+            saveRestData();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -586,10 +614,7 @@ public class ParserCSV {
                     .withIgnoreHeaderCase()
                     .withTrim());
 
-            boolean isFirst = true;
-
             for (CSVRecord csvRecord : csvParser) {
-                System.out.println(csvRecord);
 
                 // Accessing values by Header names
                 LightsOutAll lightsOutAll = new LightsOutAll();
@@ -605,18 +630,23 @@ public class ParserCSV {
                 location.setWard(csvRecord.get("Ward"));
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
-                lightsOutAll.setCompletionDate(new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()));
-                lightsOutAll.setCreateDate(new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()));
+                lightsOutAll.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                lightsOutAll.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
                 lightsOutAll.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 lightsOutAll.setStatus(csvRecord.get("Status"));
                 lightsOutAll.setRequestType(csvRecord.get("Type of Service Request"));
                 lightsOutAll.setLocation(location);
 
-                if(isFirst) {
-                    serviceRequests.add(lightsOutAll);
-                    break;
-                }
+                serviceRequests.add(lightsOutAll);
+
+                //Write on batch size
+                saveOnBatchSize();
             }
+
+            //Write rest data
+            saveRestData();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -633,10 +663,7 @@ public class ParserCSV {
                     .withIgnoreHeaderCase()
                     .withTrim());
 
-            boolean isFirst = true;
-
             for (CSVRecord csvRecord : csvParser) {
-                System.out.println(csvRecord);
 
                 // Accessing values by Header names
                 LightsOutOne lightsOutOne = new LightsOutOne();
@@ -652,18 +679,23 @@ public class ParserCSV {
                 location.setWard(csvRecord.get("Ward"));
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
-                lightsOutOne.setCompletionDate(new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()));
-                lightsOutOne.setCreateDate(new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()));
+                lightsOutOne.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                lightsOutOne.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
+                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
                 lightsOutOne.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 lightsOutOne.setStatus(csvRecord.get("Status"));
                 lightsOutOne.setRequestType(csvRecord.get("Type of Service Request"));
                 lightsOutOne.setLocation(location);
 
-                if(isFirst) {
-                    serviceRequests.add(lightsOutOne);
-                    break;
-                }
+                serviceRequests.add(lightsOutOne);
+
+                //Write on batch size
+                saveOnBatchSize();
             }
+
+            //Write rest data
+            saveRestData();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -673,13 +705,22 @@ public class ParserCSV {
     private Point getCoordinates(CSVRecord csvRecord, String x, String y){
         String xCoord = csvRecord.get(x);
         String yCoord = csvRecord.get(y);
-        Point coordinates = !StringUtils.isEmpty(xCoord) && !StringUtils.isEmpty(yCoord)
+        return !StringUtils.isEmpty(xCoord) && !StringUtils.isEmpty(yCoord)
                 ? new Point(new Position(Arrays.asList(
                 Double.parseDouble(xCoord),
                 Double.parseDouble(yCoord))))
                 : null;
-        return coordinates;
     }
 
+    private void saveOnBatchSize(){
+        if(serviceRequests.size() == BATCH_SIZE) {
+            serviceRequestRepository.saveAll(serviceRequests);
+            serviceRequests.clear();
+        }
+    }
 
+    private void saveRestData(){
+        serviceRequestRepository.saveAll(serviceRequests);
+        serviceRequests.clear();
+    }
 }
