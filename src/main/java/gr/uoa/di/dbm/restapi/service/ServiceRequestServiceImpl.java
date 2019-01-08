@@ -6,7 +6,6 @@ import gr.uoa.di.dbm.restapi.repo.ServiceRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -19,8 +18,7 @@ public class ServiceRequestServiceImpl {
     }
 
     public void parseData(){
-        List<ServiceRequest> serviceRequests = new ArrayList<>();
-        serviceRequests = new ParserCSV().parseData(serviceRequests);
+        List<ServiceRequest> serviceRequests = new ParserCSV().parseData();
         serviceRequestRepository.saveAll(serviceRequests);
     }
 }
