@@ -9,15 +9,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/parser")
 public class ParserController {
-    private final ParserServiceImpl ParserServiceImpl;
+    private final ParserServiceImpl parserServiceImpl;
 
     @Autowired
-    public ParserController(ParserServiceImpl ParserServiceImpl) {
-        this.ParserServiceImpl = ParserServiceImpl;
+    public ParserController(ParserServiceImpl parserServiceImpl) {
+        this.parserServiceImpl = parserServiceImpl;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public void modifyPetById(){
-        ParserServiceImpl.parseData();
+    public void parseData(){
+        parserServiceImpl.parseData();
     }
 }

@@ -1,6 +1,6 @@
 package gr.uoa.di.dbm.restapi.entity;
 
-import com.mongodb.client.model.geojson.Point;
+import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.io.Serializable;

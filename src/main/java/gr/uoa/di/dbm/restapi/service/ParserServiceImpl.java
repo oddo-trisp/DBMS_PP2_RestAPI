@@ -1,23 +1,20 @@
 package gr.uoa.di.dbm.restapi.service;
 
-import com.mongodb.client.model.geojson.Point;
-import com.mongodb.client.model.geojson.Position;
 import gr.uoa.di.dbm.restapi.entity.*;
 import gr.uoa.di.dbm.restapi.repo.ServiceRequestRepository;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -49,7 +46,7 @@ public class ParserServiceImpl {
 
 
     public void parseData(){
-        graffityRemovalParser();
+       /* graffityRemovalParser();
         abandonedBuildingsParser();
         abandonedVehiclesParser();
         garbageCartsParser();
@@ -59,7 +56,7 @@ public class ParserServiceImpl {
         treeDebrisParser();
         trimTreesParser();
         alleyLightsOutParser();
-        streetLightsOutAllParser();
+        streetLightsOutAllParser();*/
         streetLightsOutOneParser();
     }
 
@@ -91,9 +88,9 @@ public class ParserServiceImpl {
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
                 graffityRemoval.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Completion Date")) : null);
                 graffityRemoval.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Creation Date")) : null);
                 graffityRemoval.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 graffityRemoval.setStatus(csvRecord.get("Status"));
                 graffityRemoval.setRequestType(csvRecord.get("Type of Service Request"));
@@ -147,7 +144,7 @@ public class ParserServiceImpl {
                 location.setZipCode(csvRecord.get("ZIP CODE"));
 
                 abandonnedBuilding.setCreateDate(!StringUtils.isEmpty(csvRecord.get("DATE SERVICE REQUEST WAS RECEIVED")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("DATE SERVICE REQUEST WAS RECEIVED")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("DATE SERVICE REQUEST WAS RECEIVED")) : null);
                 abandonnedBuilding.setServiceRequestNo(csvRecord.get("SERVICE REQUEST NUMBER"));
                 abandonnedBuilding.setRequestType(csvRecord.get("SERVICE REQUEST TYPE"));
                 abandonnedBuilding.setBuildingLocationOnTheLot(csvRecord.get("LOCATION OF BUILDING ON THE LOT (IF GARAGE, CHANGE TYPE CODE TO BGD)."));
@@ -202,9 +199,9 @@ public class ParserServiceImpl {
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
                 abandonnedVehicle.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Completion Date")) : null);
                 abandonnedVehicle.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Creation Date")) : null);
                 abandonnedVehicle.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 abandonnedVehicle.setStatus(csvRecord.get("Status"));
                 abandonnedVehicle.setRequestType(csvRecord.get("Type of Service Request"));
@@ -260,9 +257,9 @@ public class ParserServiceImpl {
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
                 garbageCart.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Completion Date")) : null);
                 garbageCart.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Creation Date")) : null);
                 garbageCart.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 garbageCart.setStatus(csvRecord.get("Status"));
                 garbageCart.setRequestType(csvRecord.get("Type of Service Request"));
@@ -315,9 +312,9 @@ public class ParserServiceImpl {
                 location.setZipCode(csvRecord.get("ZIP"));
 
                 potHolesReported.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("COMPLETION DATE")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("COMPLETION DATE")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("COMPLETION DATE")) : null);
                 potHolesReported.setCreateDate(!StringUtils.isEmpty(csvRecord.get("CREATION DATE")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("CREATION DATE")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("CREATION DATE")) : null);
                 potHolesReported.setServiceRequestNo(csvRecord.get("SERVICE REQUEST NUMBER"));
                 potHolesReported.setStatus(csvRecord.get("STATUS"));
                 potHolesReported.setRequestType(csvRecord.get("TYPE OF SERVICE REQUEST"));
@@ -369,9 +366,9 @@ public class ParserServiceImpl {
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
                 rodentBaiting.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Completion Date")) : null);
                 rodentBaiting.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Creation Date")) : null);
                 rodentBaiting.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 rodentBaiting.setStatus(csvRecord.get("Status"));
                 rodentBaiting.setRequestType(csvRecord.get("Type of Service Request"));
@@ -427,9 +424,9 @@ public class ParserServiceImpl {
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
                 sanitationCodeComplaint.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Completion Date")) : null);
                 sanitationCodeComplaint.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Creation Date")) : null);
                 sanitationCodeComplaint.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 sanitationCodeComplaint.setStatus(csvRecord.get("Status"));
                 sanitationCodeComplaint.setRequestType(csvRecord.get("Type of Service Request"));
@@ -478,9 +475,9 @@ public class ParserServiceImpl {
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
                 treeDebri.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Completion Date")) : null);
                 treeDebri.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Creation Date")) : null);
                 treeDebri.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 treeDebri.setStatus(csvRecord.get("Status"));
                 treeDebri.setRequestType(csvRecord.get("Type of Service Request"));
@@ -531,9 +528,9 @@ public class ParserServiceImpl {
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
                 trimTree.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Completion Date")) : null);
                 trimTree.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Creation Date")) : null);
                 trimTree.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 trimTree.setStatus(csvRecord.get("Status"));
                 trimTree.setRequestType(csvRecord.get("Type of Service Request"));
@@ -582,9 +579,9 @@ public class ParserServiceImpl {
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
                 alleyLightsOut.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Completion Date")) : null);
                 alleyLightsOut.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Creation Date")) : null);
                 alleyLightsOut.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 alleyLightsOut.setStatus(csvRecord.get("Status"));
                 alleyLightsOut.setRequestType(csvRecord.get("Type of Service Request"));
@@ -631,9 +628,9 @@ public class ParserServiceImpl {
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
                 lightsOutAll.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Completion Date")) : null);
                 lightsOutAll.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Creation Date")) : null);
                 lightsOutAll.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 lightsOutAll.setStatus(csvRecord.get("Status"));
                 lightsOutAll.setRequestType(csvRecord.get("Type of Service Request"));
@@ -680,9 +677,9 @@ public class ParserServiceImpl {
                 location.setZipCode(csvRecord.get("ZIP Code"));
 
                 lightsOutOne.setCompletionDate(!StringUtils.isEmpty(csvRecord.get("Completion Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Completion Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Completion Date")) : null);
                 lightsOutOne.setCreateDate(!StringUtils.isEmpty(csvRecord.get("Creation Date")) ?
-                        new Timestamp(dateFormat.parse(csvRecord.get("Creation Date")).getTime()) : null);
+                        dateFormat.parse(csvRecord.get("Creation Date")) : null);
                 lightsOutOne.setServiceRequestNo(csvRecord.get("Service Request Number"));
                 lightsOutOne.setStatus(csvRecord.get("Status"));
                 lightsOutOne.setRequestType(csvRecord.get("Type of Service Request"));
@@ -706,9 +703,7 @@ public class ParserServiceImpl {
         String xCoord = csvRecord.get(x);
         String yCoord = csvRecord.get(y);
         return !StringUtils.isEmpty(xCoord) && !StringUtils.isEmpty(yCoord)
-                ? new Point(new Position(Arrays.asList(
-                Double.parseDouble(xCoord),
-                Double.parseDouble(yCoord))))
+                ? new Point(Double.parseDouble(xCoord), Double.parseDouble(yCoord))
                 : null;
     }
 

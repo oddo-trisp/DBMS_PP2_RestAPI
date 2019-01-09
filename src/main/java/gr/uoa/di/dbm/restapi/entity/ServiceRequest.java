@@ -1,27 +1,26 @@
 package gr.uoa.di.dbm.restapi.entity;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.util.Date;
 
 @Document(collection="service_request")
 @TypeAlias("service_request")
-public abstract class ServiceRequest implements Serializable {
+public class ServiceRequest implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	private ObjectId serviceRequestId;
+	private String serviceRequestId;
 
 	@Field("completion_date")
-	private Timestamp completionDate;
+	private Date completionDate;
 
 	@Field("create_date")
-	private Timestamp createDate;
+	private Date createDate;
 
 	@Field("current_activity")
 	private String currentActivity;
@@ -44,27 +43,27 @@ public abstract class ServiceRequest implements Serializable {
 	public ServiceRequest() {
 	}
 
-	public ObjectId getServiceRequestId() {
+	public String getServiceRequestId() {
 		return this.serviceRequestId;
 	}
 
-	public void setServiceRequestId(ObjectId serviceRequestId) {
+	public void setServiceRequestId(String serviceRequestId) {
 		this.serviceRequestId = serviceRequestId;
 	}
 
-	public Timestamp getCompletionDate() {
+	public Date getCompletionDate() {
 		return this.completionDate;
 	}
 
-	public void setCompletionDate(Timestamp completionDate) {
+	public void setCompletionDate(Date completionDate) {
 		this.completionDate = completionDate;
 	}
 
-	public Timestamp getCreateDate() {
+	public Date getCreateDate() {
 		return this.createDate;
 	}
 
-	public void setCreateDate(Timestamp createDate) {
+	public void setCreateDate(Date createDate) {
 		this.createDate = createDate;
 	}
 
