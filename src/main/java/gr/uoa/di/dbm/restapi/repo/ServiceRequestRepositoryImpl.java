@@ -39,7 +39,7 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
         return result.getMappedResults();
     }
 
-    public List query4(Date startDate, Date endDate){
+    public List query5(Date startDate, Date endDate){
 
         //Check for null completion date because abandoned building don't have that field
         MatchOperation matchDates = Aggregation.match(Criteria
@@ -54,26 +54,6 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
                 .andExpression("average_completion_period").as("averageCompletionPeriod");
 
         Aggregation aggregation = newAggregation(matchDates, avgServiceRequestsByTypeOnCompletionPeriod, projectToMatchModel);
-
-        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "service_request", String.class);
-
-        return result.getMappedResults();
-    }
-
-    public List query6(Date startDate, Date endDate){
-
-        //Check only on types that have ssa
-        MatchOperation matchDates = Aggregation.match(Criteria
-                .where("create_date").gte(startDate).lte(endDate)
-                .and("location.ssa").exists(true).ne(""));
-
-        GroupOperation countServiceRequestsByLocationSSA = Aggregation.group("location.ssa").count().as("services_this_period");
-        SortOperation sortByServicesThisPeriodDesc = Aggregation.sort(new Sort(Direction.DESC, "services_this_period"));
-        ProjectionOperation projectToMatchModel = Aggregation.project()
-                .andExpression("_id").as("SSA")
-                .andExpression("services_this_period").as("servicesThisPeriod");
-
-        Aggregation aggregation = newAggregation(matchDates, countServiceRequestsByLocationSSA, sortByServicesThisPeriodDesc, projectToMatchModel);
 
         AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "service_request", String.class);
 

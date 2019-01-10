@@ -22,12 +22,8 @@ public class QueryServiceImpl {
         return serviceRequestRepository.query1(startDate, endDate);
     }
 
-    public List query4(Date startDate, Date endDate){
-        return serviceRequestRepository.query4(startDate, endDate);
-    }
-
-    public List query6(Date startDate, Date endDate){
-        return serviceRequestRepository.query6(startDate, endDate);
+    public List query5(Date startDate, Date endDate){
+        return serviceRequestRepository.query5(startDate, endDate);
     }
 
     /*public List<ServiceRequest> bar(Date creationDate, Date completionDate, String type){
