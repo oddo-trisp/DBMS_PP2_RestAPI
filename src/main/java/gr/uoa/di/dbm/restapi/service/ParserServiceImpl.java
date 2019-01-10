@@ -46,7 +46,7 @@ public class ParserServiceImpl {
 
 
     public void parseData(){
-       /* graffityRemovalParser();
+        graffityRemovalParser();
         abandonedBuildingsParser();
         abandonedVehiclesParser();
         garbageCartsParser();
@@ -56,7 +56,7 @@ public class ParserServiceImpl {
         treeDebrisParser();
         trimTreesParser();
         alleyLightsOutParser();
-        streetLightsOutAllParser();*/
+        streetLightsOutAllParser();
         streetLightsOutOneParser();
     }
 

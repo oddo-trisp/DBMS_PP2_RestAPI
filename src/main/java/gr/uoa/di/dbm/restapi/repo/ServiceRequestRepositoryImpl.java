@@ -1,6 +1,5 @@
 package gr.uoa.di.dbm.restapi.repo;
 
-import gr.uoa.di.dbm.restapi.entity.ServiceRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -9,6 +8,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
+import java.util.List;
 
 import static org.springframework.data.domain.Sort.Direction;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
@@ -23,11 +23,11 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
         this.mongoTemplate = mongoTemplate;
     }
 
-    public void query1(Date createDate, Date completionDate){
+    public List query1(Date createDate, Date completionDate){
         MatchOperation matchDates = Aggregation.match(Criteria
                 .where("create_date").gte(createDate)
                 .and("completion_date").lte(completionDate));
-        GroupOperation countServiceRequestsByType = Aggregation.group("request_type").count().as("incidents");
+        GroupOperation countServiceRequestsByType = Aggregation.group().count().as("incidents");
         SortOperation sortByServiceRequestNoDesc = Aggregation.sort(new Sort(Direction.DESC, "incidents"));
         ProjectionOperation projectToMatchModel = Aggregation.project()
                 .andExpression("_id").as("requestType")
@@ -37,6 +37,6 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
 
         AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "service_request", String.class);
 
-        result.getRawResults().get("results");
+        return result.getMappedResults();
     }
 }

@@ -27,11 +27,11 @@ public class QueryController {
         this.dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     }
 
-    @RequestMapping(value = "/foo", method = RequestMethod.GET)
-    public void foo(@RequestParam Map<String,String> parameters) throws ParseException {
+    @RequestMapping(value = "/query1", method = RequestMethod.GET)
+    public List query1(@RequestParam Map<String,String> parameters) throws ParseException {
         Date startDate = dateFormat.parse(parameters.get("startDate"));
         Date endDate = dateFormat.parse(parameters.get("endDate"));
-        queryServiceImpl.query1(startDate, endDate);
+        return queryServiceImpl.query1(startDate, endDate);
     }
 
     /*@RequestMapping(value = "/bar", method = RequestMethod.GET)
