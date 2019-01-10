@@ -4,5 +4,6 @@ import java.util.Date;
 import java.util.List;
 
 public interface ServiceRequestRepositoryCustom {
-    List query1(Date creationDate, Date completionDate);
+    List query1(Date startDate, Date endDate);
+    List query4(Date startDate, Date endDate);
 }

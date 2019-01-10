@@ -18,8 +18,12 @@ public class QueryServiceImpl {
         this.serviceRequestRepository = serviceRequestRepository;
     }
 
-    public List query1(Date creationDate, Date completionDate){
-        return serviceRequestRepository.query1(creationDate, completionDate);
+    public List query1(Date startDate, Date endDate){
+        return serviceRequestRepository.query1(startDate, endDate);
+    }
+
+    public List query4(Date startDate, Date endDate){
+        return serviceRequestRepository.query4(startDate, endDate);
     }
 
     /*public List<ServiceRequest> bar(Date creationDate, Date completionDate, String type){
