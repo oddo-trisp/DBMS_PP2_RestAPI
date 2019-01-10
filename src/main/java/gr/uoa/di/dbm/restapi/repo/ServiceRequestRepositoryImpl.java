@@ -39,6 +39,26 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
         return result.getMappedResults();
     }
 
+    public List query2(Date startDate, Date endDate, String requestType) {
+
+        MatchOperation matchDates = Aggregation.match(Criteria
+                .where("create_date").gte(startDate).lte(endDate));
+        MatchOperation matchRequestType = Aggregation.match(Criteria
+                .where("request_type").is(requestType));
+
+        GroupOperation countServiceRequestsByDate = Aggregation.group("create_date").count().as("incidents");
+        SortOperation sortByDateDesc = Aggregation.sort(new Sort(Direction.DESC, "incidents"));
+
+        ProjectionOperation projectToMatchModel = Aggregation.project()
+                .andExpression("create_date").as("createDate")
+                .andExpression("incidents").as("incidents");
+
+        Aggregation aggregation = newAggregation(matchDates, matchRequestType, countServiceRequestsByDate, sortByDateDesc, projectToMatchModel);
+        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "service_request", String.class);
+
+        return result.getMappedResults();
+    }
+
     public List query5(Date startDate, Date endDate){
 
         //Check for null completion date because abandoned building don't have that field
