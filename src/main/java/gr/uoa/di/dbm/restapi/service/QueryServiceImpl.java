@@ -24,6 +24,8 @@ public class QueryServiceImpl {
 
     public List query2(Date startDate, Date endDate, String requestType) { return serviceRequestRepository.query2(startDate, endDate, requestType); }
 
+    public List query4(String requestType) { return serviceRequestRepository.query4(requestType); }
+
     public List query5(Date startDate, Date endDate){
         return serviceRequestRepository.query5(startDate, endDate);
     }

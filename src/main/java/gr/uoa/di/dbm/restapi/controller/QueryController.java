@@ -42,6 +42,12 @@ public class QueryController {
         return queryServiceImpl.query2(startDate, endDate, requestType);
     }
 
+    @RequestMapping(value = "/query4", method = RequestMethod.GET)
+    public List query4(@RequestParam Map<String,String> parameters) throws ParseException {
+        String requestType = parameters.get("requestType");
+        return queryServiceImpl.query4(requestType);
+    }
+
     @RequestMapping(value = "/query5", method = RequestMethod.GET)
     public List query5(@RequestParam Map<String,String> parameters) throws ParseException {
         Date startDate = dateFormat.parse(parameters.get("startDate"));
