@@ -26,6 +26,10 @@ public class QueryServiceImpl {
         return serviceRequestRepository.query4(startDate, endDate);
     }
 
+    public List query6(Date startDate, Date endDate){
+        return serviceRequestRepository.query6(startDate, endDate);
+    }
+
     /*public List<ServiceRequest> bar(Date creationDate, Date completionDate, String type){
         return serviceRequestRepository.findByCreateDateGreaterThanEqualAndCompletionDateLessThanEqualAndRequestType(creationDate, completionDate, type);
     }*/
