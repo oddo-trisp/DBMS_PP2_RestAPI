@@ -16,13 +16,18 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 @Service
 public class ParserServiceImpl {
     private final ServiceRequestRepository serviceRequestRepository;
     private List<ServiceRequest> serviceRequests;
+    private List<Citizen> citizens;
     private SimpleDateFormat dateFormat;
+    private int upvoteCounter;
 
+    private static final String CITIZENS = "Datasets/citizen_file.csv";
     private static final String GRAFFITY_REMOVAL = "Datasets/311-service-requests-graffiti-removal.csv";
     private static final String ABANDONED_BUILDING = "Datasets/311-service-requests-vacant-and-abandoned-buildings-reported.csv";
     private static final String ABANDONED_VEHICLE = "Datasets/311-service-requests-abandoned-vehicles.csv";
@@ -36,16 +41,20 @@ public class ParserServiceImpl {
     private static final String LIGHTS_OUT_ALL = "Datasets/311-service-requests-street-lights-all-out.csv";
     private static final String LIGHTS_OUT_ONE = "Datasets/311-service-requests-street-lights-one-out.csv";
     private static final int BATCH_SIZE = 100000;
+    private static final int UPVOTE_LIMIT = 3000000;
 
     @Autowired
     public ParserServiceImpl(ServiceRequestRepository serviceRequestRepository) {
         this.serviceRequestRepository = serviceRequestRepository;
         this.serviceRequests = new ArrayList<>();
+        this.citizens = new ArrayList<>();
         this.dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        this.upvoteCounter = 0;
     }
 
 
-    public void parseData(){
+    public void parseData() {
+        parseCitizens();
         graffityRemovalParser();
         abandonedBuildingsParser();
         abandonedVehiclesParser();
@@ -58,6 +67,33 @@ public class ParserServiceImpl {
         alleyLightsOutParser();
         streetLightsOutAllParser();
         streetLightsOutOneParser();
+    }
+
+    private void parseCitizens() {
+        try {
+
+            Reader reader;
+            reader = Files.newBufferedReader(Paths.get(CITIZENS));
+            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
+                    .withFirstRecordAsHeader()
+                    .withIgnoreHeaderCase()
+                    .withTrim());
+
+            for (CSVRecord csvRecord : csvParser) {
+                Citizen citizen = new Citizen();
+                citizen.setName(csvRecord.get("name"));
+                citizen.setBirthday(csvRecord.get("birthday"));
+                citizen.setOccupation(csvRecord.get("occupation"));
+                citizen.setPhone(csvRecord.get("phone"));
+                citizen.setEmail(csvRecord.get("email"));
+                citizen.setVotes(0);
+
+                citizens.add(citizen);
+            }
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void graffityRemovalParser(){
@@ -98,6 +134,8 @@ public class ParserServiceImpl {
                 graffityRemoval.setGraffityLocation(csvRecord.get("Where is the Graffiti located?"));
 
                 graffityRemoval.setLocation(location);
+
+                addUpvoters(graffityRemoval);
 
                 serviceRequests.add(graffityRemoval);
 
@@ -157,6 +195,8 @@ public class ParserServiceImpl {
 
                 abandonnedBuilding.setLocation(location);
 
+                addUpvoters(abandonnedBuilding);
+
                 serviceRequests.add(abandonnedBuilding);
 
                 //Write on batch size
@@ -215,6 +255,8 @@ public class ParserServiceImpl {
 
                 abandonnedVehicle.setLocation(location);
 
+                addUpvoters(abandonnedVehicle);
+
                 serviceRequests.add(abandonnedVehicle);
 
                 //Write on batch size
@@ -270,6 +312,8 @@ public class ParserServiceImpl {
 
                 garbageCart.setLocation(location);
 
+                addUpvoters(garbageCart);
+
                 serviceRequests.add(garbageCart);
 
                 //Write on batch size
@@ -324,6 +368,8 @@ public class ParserServiceImpl {
                         ? Double.valueOf(csvRecord.get("NUMBER OF POTHOLES FILLED ON BLOCK")).longValue() : null);
 
                 potHolesReported.setLocation(location);
+
+                addUpvoters(potHolesReported);
 
                 serviceRequests.add(potHolesReported);
 
@@ -383,6 +429,8 @@ public class ParserServiceImpl {
 
                 rodentBaiting.setLocation(location);
 
+                addUpvoters(rodentBaiting);
+
                 serviceRequests.add(rodentBaiting);
 
                 //Write on batch size
@@ -433,6 +481,8 @@ public class ParserServiceImpl {
                 sanitationCodeComplaint.setNatureViolation(csvRecord.get("What is the Nature of this Code Violation?"));
 
                 sanitationCodeComplaint.setLocation(location);
+
+                addUpvoters(sanitationCodeComplaint);
 
                 serviceRequests.add(sanitationCodeComplaint);
 
@@ -487,6 +537,8 @@ public class ParserServiceImpl {
 
                 treeDebri.setLocation(location);
 
+                addUpvoters(treeDebri);
+
                 serviceRequests.add(treeDebri);
 
                 //Write on batch size
@@ -538,6 +590,8 @@ public class ParserServiceImpl {
 
                 trimTree.setLocation(location);
 
+                addUpvoters(trimTree);
+
                 serviceRequests.add(trimTree);
 
                 //Write on batch size
@@ -586,6 +640,8 @@ public class ParserServiceImpl {
                 alleyLightsOut.setStatus(csvRecord.get("Status"));
                 alleyLightsOut.setRequestType(csvRecord.get("Type of Service Request"));
                 alleyLightsOut.setLocation(location);
+
+                addUpvoters(alleyLightsOut);
 
                 serviceRequests.add(alleyLightsOut);
 
@@ -636,6 +692,8 @@ public class ParserServiceImpl {
                 lightsOutAll.setRequestType(csvRecord.get("Type of Service Request"));
                 lightsOutAll.setLocation(location);
 
+                addUpvoters(lightsOutAll);
+
                 serviceRequests.add(lightsOutAll);
 
                 //Write on batch size
@@ -685,6 +743,8 @@ public class ParserServiceImpl {
                 lightsOutOne.setRequestType(csvRecord.get("Type of Service Request"));
                 lightsOutOne.setLocation(location);
 
+                addUpvoters(lightsOutOne);
+
                 serviceRequests.add(lightsOutOne);
 
                 //Write on batch size
@@ -707,6 +767,25 @@ public class ParserServiceImpl {
                 : null;
     }
 
+    private void addUpvoters(ServiceRequest serviceRequest){
+        if(randomInt(0,1) == 1 && upvoteCounter < UPVOTE_LIMIT){
+            int listRealEnd = citizens.size();
+            int listStart = randomInt(0,listRealEnd);
+            int possibleEnd = randomInt(listStart, listStart+99);
+            int listEnd = possibleEnd <= listRealEnd ? possibleEnd : listRealEnd;      //Max 1000 upvoters
+
+            List<Citizen> votes = citizens.subList(listStart,listEnd)
+                    .stream()
+                    .filter(c -> c.getVotes() < 1000)
+                    .peek(c -> c.setVotes(c.getVotes()+1))
+                    .collect(Collectors.toList());
+
+            serviceRequest.setUpvotes(votes);
+
+            upvoteCounter++;
+        }
+    }
+
     private void saveOnBatchSize(){
         if(serviceRequests.size() == BATCH_SIZE) {
             serviceRequestRepository.saveAll(serviceRequests);
@@ -717,5 +796,9 @@ public class ParserServiceImpl {
     private void saveRestData(){
         serviceRequestRepository.saveAll(serviceRequests);
         serviceRequests.clear();
+    }
+
+    private int randomInt(int min, int max){
+        return (int) Math.ceil(ThreadLocalRandom.current().nextInt(min, max+1));
     }
 }

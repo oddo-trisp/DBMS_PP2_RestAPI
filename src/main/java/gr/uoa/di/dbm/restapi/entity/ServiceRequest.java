@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Document(collection="service_request")
 @TypeAlias("service_request")
@@ -39,6 +40,9 @@ public class ServiceRequest implements Serializable {
 
 	@Field("location")
 	private Location location;
+
+	@Field("upvotes")
+	private List<Citizen> upvotes;
 
 	public ServiceRequest() {
 	}
@@ -115,4 +119,11 @@ public class ServiceRequest implements Serializable {
 		this.location = location;
 	}
 
+	public List<Citizen> getUpvotes() {
+		return upvotes;
+	}
+
+	public void setUpvotes(List<Citizen> upvotes) {
+		this.upvotes = upvotes;
+	}
 }
