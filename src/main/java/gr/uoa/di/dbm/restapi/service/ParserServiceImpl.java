@@ -771,7 +771,7 @@ public class ParserServiceImpl {
         if(randomInt(0,1) == 1 && upvoteCounter < UPVOTE_LIMIT){
             int listRealEnd = citizens.size();
             int listStart = randomInt(0,listRealEnd);
-            int possibleEnd = randomInt(listStart, listStart+99);
+            int possibleEnd = randomInt(listStart, listStart+49);
             int listEnd = possibleEnd <= listRealEnd ? possibleEnd : listRealEnd;      //Max 1000 upvoters
 
             List<Citizen> votes = citizens.subList(listStart,listEnd)
