@@ -1,12 +1,20 @@
 package gr.uoa.di.dbm.restapi.entity;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.io.Serializable;
 
+@Document(collection="citizen")
+@TypeAlias("citizen")
 public class Citizen implements Serializable {
     private static final long serialVersionUID = 1L;
+
+    @Id
+    private String citizenId;
 
     @Field("name")
     private String name;
@@ -25,6 +33,14 @@ public class Citizen implements Serializable {
 
     @Transient
     private int votes;
+
+    public String getCitizenId() {
+        return citizenId;
+    }
+
+    public void setCitizenId(String citizenId) {
+        this.citizenId = citizenId;
+    }
 
     public String getName() {
         return name;

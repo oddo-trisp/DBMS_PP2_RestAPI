@@ -42,7 +42,7 @@ public class ServiceRequest implements Serializable {
 	private Location location;
 
 	@Field("upvotes")
-	private List<Citizen> upvotes;
+	private List<String> upvotes;
 
 	public ServiceRequest() {
 	}
@@ -119,11 +119,11 @@ public class ServiceRequest implements Serializable {
 		this.location = location;
 	}
 
-	public List<Citizen> getUpvotes() {
+	public List<String> getUpvotes() {
 		return upvotes;
 	}
 
-	public void setUpvotes(List<Citizen> upvotes) {
+	public void setUpvotes(List<String> upvotes) {
 		this.upvotes = upvotes;
 	}
 }

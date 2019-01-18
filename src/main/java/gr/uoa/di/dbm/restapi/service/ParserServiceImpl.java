@@ -1,6 +1,7 @@
 package gr.uoa.di.dbm.restapi.service;
 
 import gr.uoa.di.dbm.restapi.entity.*;
+import gr.uoa.di.dbm.restapi.repo.CitizenRepository;
 import gr.uoa.di.dbm.restapi.repo.ServiceRequestRepository;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 @Service
 public class ParserServiceImpl {
     private final ServiceRequestRepository serviceRequestRepository;
+    private final CitizenRepository citizenRepository;
     private List<ServiceRequest> serviceRequests;
     private List<Citizen> citizens;
     private SimpleDateFormat dateFormat;
@@ -44,8 +46,9 @@ public class ParserServiceImpl {
     private static final int UPVOTE_LIMIT = 3000000;
 
     @Autowired
-    public ParserServiceImpl(ServiceRequestRepository serviceRequestRepository) {
+    public ParserServiceImpl(ServiceRequestRepository serviceRequestRepository, CitizenRepository citizenRepository) {
         this.serviceRequestRepository = serviceRequestRepository;
+        this.citizenRepository = citizenRepository;
         this.serviceRequests = new ArrayList<>();
         this.citizens = new ArrayList<>();
         this.dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -90,6 +93,8 @@ public class ParserServiceImpl {
 
                 citizens.add(citizen);
             }
+
+            citizens = citizenRepository.saveAll(citizens);
         }
         catch(Exception e) {
             e.printStackTrace();
@@ -774,10 +779,11 @@ public class ParserServiceImpl {
             int possibleEnd = randomInt(listStart, listStart+49);
             int listEnd = possibleEnd <= listRealEnd ? possibleEnd : listRealEnd;      //Max 1000 upvoters
 
-            List<Citizen> votes = citizens.subList(listStart,listEnd)
+            List<String> votes = citizens.subList(listStart,listEnd)
                     .stream()
                     .filter(c -> c.getVotes() < 1000)
                     .peek(c -> c.setVotes(c.getVotes()+1))
+                    .map(Citizen::getCitizenId)
                     .collect(Collectors.toList());
 
             serviceRequest.setUpvotes(votes);
