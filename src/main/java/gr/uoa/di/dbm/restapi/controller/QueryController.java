@@ -1,12 +1,11 @@
 package gr.uoa.di.dbm.restapi.controller;
 
+import gr.uoa.di.dbm.restapi.entity.GraffityRemoval;
 import gr.uoa.di.dbm.restapi.entity.ServiceRequest;
 import gr.uoa.di.dbm.restapi.service.QueryServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -64,6 +63,22 @@ public class QueryController {
     @RequestMapping(value = "/query8", method = RequestMethod.GET)
     public List query8() {
         return queryServiceImpl.query8();
+    }
+
+    @RequestMapping(value = "/insertIncident", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public String insertIncident(@RequestParam Map<String,String> parameters, @RequestBody ServiceRequest serviceRequest) {
+        if(serviceRequest instanceof GraffityRemoval)
+            System.out.println(serviceRequest.getClass());
+        else
+            System.out.println(serviceRequest.getClass());
+        return queryServiceImpl.insertIncident(parameters);
+    }
+
+    @RequestMapping(value = "/upvoteIncident", method = RequestMethod.POST)
+    public String upvoteIncident(@RequestParam Map<String,String> parameters) {
+        String incidentId = parameters.get("incidentId");
+        String userName = parameters.get("userName");
+        return queryServiceImpl.upvoteIncident(incidentId, userName);
     }
 
     /*@RequestMapping(value = "/bar", method = RequestMethod.GET)

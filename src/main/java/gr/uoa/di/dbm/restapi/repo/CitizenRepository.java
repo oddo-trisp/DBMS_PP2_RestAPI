@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface CitizenRepository extends MongoRepository<Citizen, String> {
     List<Citizen> findTop50ByVotesNotNullOrderByVotesDesc();
+    Citizen findByName(String name);
 }

@@ -1,12 +1,13 @@
 package gr.uoa.di.dbm.restapi.service;
 
+import gr.uoa.di.dbm.restapi.entity.*;
 import gr.uoa.di.dbm.restapi.repo.CitizenRepository;
 import gr.uoa.di.dbm.restapi.repo.ServiceRequestRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class QueryServiceImpl {
@@ -35,6 +36,43 @@ public class QueryServiceImpl {
     public List query7(Date startDate) { return serviceRequestRepository.query7(startDate); }
 
     public List query8() { return citizenRepository.findTop50ByVotesNotNullOrderByVotesDesc(); }
+
+    public String insertIncident(Map<String,String> restParameters){
+        ServiceRequest serviceRequest;
+
+        String requestType = restParameters.getOrDefault("request_type",null);
+
+        return null;
+    }
+
+    public String upvoteIncident(String incidentId, String name){
+        String result;
+        Citizen citizen = citizenRepository.findByName(name);
+        if(citizen != null) {
+            Optional<ServiceRequest> optionalServiceRequest = serviceRequestRepository.findById(incidentId);
+            if (optionalServiceRequest.isPresent()) {
+                ServiceRequest serviceRequest = optionalServiceRequest.get();
+                List upvotes = serviceRequest.getUpvotes() != null
+                        ? serviceRequest.getUpvotes()
+                        : new ArrayList();
+                if (!upvotes.contains(citizen.getCitizenId())) {
+                    upvotes.add(citizen.getCitizenId());
+                    serviceRequest.setUpvotes(upvotes);
+                    citizen.increaseVotes();
+                    citizenRepository.save(citizen);
+                    serviceRequestRepository.save(serviceRequest);
+                    result = "Incident with id "+incidentId+" has successfully been upvoted by user "+name;
+                }
+                else
+                    result = "Error: User with name " + name + " has already upvote this incident!";
+            }
+            else
+                result = "Error: No incident with id " + incidentId + " is stored in database!";
+        }
+        else
+            result = "Error: No user with name "+ name +" is stored in database!";
+        return result;
+    }
 
     /*public List<ServiceRequest> bar(Date creationDate, Date completionDate, String type){
         return serviceRequestRepository.findByCreateDateGreaterThanEqualAndCompletionDateLessThanEqualAndRequestType(creationDate, completionDate, type);

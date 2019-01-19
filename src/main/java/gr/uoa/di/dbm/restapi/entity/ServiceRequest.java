@@ -1,5 +1,7 @@
 package gr.uoa.di.dbm.restapi.entity;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -9,8 +11,23 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-@Document(collection="service_request")
-@TypeAlias("service_request")
+/*@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_class")
+@JsonSubTypes({
+		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
+		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
+		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
+		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
+		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
+		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
+		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
+		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
+		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
+		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
+		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
+		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
+})*/
+@Document(collection="serviceRequest")
+@TypeAlias("serviceRequest")
 public class ServiceRequest implements Serializable {
 	private static final long serialVersionUID = 1L;
 

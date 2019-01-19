@@ -16,7 +16,7 @@ public class ParserController {
         this.parserServiceImpl = parserServiceImpl;
     }
 
-    @RequestMapping(value = "/", method = RequestMethod.GET)
+    @RequestMapping(value = "/", method = RequestMethod.PUT)
     public void parseData(){
         parserServiceImpl.parseData();
     }

@@ -783,7 +783,7 @@ public class ParserServiceImpl {
             List<String> votes = citizens.subList(listStart,listEnd)
                     .stream()
                     .filter(c -> c.getVotes() < 1000)
-                    .peek(c -> c.setVotes(c.getVotes()+1))
+                    .peek(Citizen::increaseVotes)
                     .map(Citizen::getCitizenId)
                     .collect(Collectors.toList());
 

@@ -89,4 +89,8 @@ public class Citizen implements Serializable {
     public void setVotes(int votes) {
         this.votes = votes;
     }
+
+    public void increaseVotes(){
+        this.votes++;
+    }
 }
