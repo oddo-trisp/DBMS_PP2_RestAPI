@@ -7,7 +7,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.geo.Point;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -58,7 +58,7 @@ public class ParserServiceImpl {
 
     public void parseData() {
         parseCitizens();
-        graffityRemovalParser();
+        /*graffityRemovalParser();
         abandonedBuildingsParser();
         abandonedVehiclesParser();
         garbageCartsParser();
@@ -68,7 +68,7 @@ public class ParserServiceImpl {
         treeDebrisParser();
         trimTreesParser();
         alleyLightsOutParser();
-        streetLightsOutAllParser();
+        streetLightsOutAllParser();*/
         streetLightsOutOneParser();
         citizenRepository.saveAll(citizens);
     }
@@ -120,8 +120,7 @@ public class ParserServiceImpl {
 
                 location.setCoordinates(getCoordinates(csvRecord,"X Coordinate", "Y Coordinate" ));
                 location.setCommunityArea(csvRecord.get("Community Area"));
-                location.setLatitude(!StringUtils.isEmpty(csvRecord.get("Latitude")) ? Double.parseDouble(csvRecord.get("Latitude")) : null);
-                location.setLongitude(!StringUtils.isEmpty(csvRecord.get("Longitude")) ? Double.parseDouble(csvRecord.get("Longitude")) : null);
+                location.setLongitudeLatitude(getCoordinates(csvRecord, "Longitude","Latitude"));
                 location.setLocationJson(csvRecord.get("Location"));
                 location.setPoliceDistrict(csvRecord.get("Police District"));
                 location.setAddress(csvRecord.get("Street Address"));
@@ -179,8 +178,7 @@ public class ParserServiceImpl {
 
                 location.setCoordinates(getCoordinates(csvRecord,"X COORDINATE", "Y COORDINATE" ));
                 location.setCommunityArea(csvRecord.get("Community Area"));
-                location.setLatitude(!StringUtils.isEmpty(csvRecord.get("LATITUDE")) ? Double.parseDouble(csvRecord.get("LATITUDE")) : null);
-                location.setLongitude(!StringUtils.isEmpty(csvRecord.get("LONGITUDE")) ? Double.parseDouble(csvRecord.get("LONGITUDE")) : null);
+                location.setLongitudeLatitude(getCoordinates(csvRecord, "LONGITUDE","LATITUDE"));
                 location.setLocationJson(csvRecord.get("Location"));
                 location.setPoliceDistrict(csvRecord.get("Police District"));
                 location.setAddress(address);
@@ -235,8 +233,7 @@ public class ParserServiceImpl {
 
                 location.setCoordinates(getCoordinates(csvRecord,"X Coordinate", "Y Coordinate" ));
                 location.setCommunityArea(csvRecord.get("Community Area"));
-                location.setLatitude(!StringUtils.isEmpty(csvRecord.get("Latitude")) ? Double.parseDouble(csvRecord.get("Latitude")) : null);
-                location.setLongitude(!StringUtils.isEmpty(csvRecord.get("Longitude")) ? Double.parseDouble(csvRecord.get("Longitude")) : null);
+                location.setLongitudeLatitude(getCoordinates(csvRecord, "Longitude", "Latitude"));
                 location.setLocationJson(csvRecord.get("Location"));
                 location.setPoliceDistrict(csvRecord.get("Police District"));
                 location.setAddress(csvRecord.get("Street Address"));
@@ -295,8 +292,7 @@ public class ParserServiceImpl {
 
                 location.setCoordinates(getCoordinates(csvRecord,"X Coordinate", "Y Coordinate" ));
                 location.setCommunityArea(csvRecord.get("Community Area"));
-                location.setLatitude(!StringUtils.isEmpty(csvRecord.get("Latitude")) ? Double.parseDouble(csvRecord.get("Latitude")) : null);
-                location.setLongitude(!StringUtils.isEmpty(csvRecord.get("Longitude")) ? Double.parseDouble(csvRecord.get("Longitude")) : null);
+                location.setLongitudeLatitude(getCoordinates(csvRecord, "Longitude", "Latitude"));
                 location.setLocationJson(csvRecord.get("Location"));
                 location.setPoliceDistrict(csvRecord.get("Police District"));
                 location.setAddress(csvRecord.get("Street Address"));
@@ -352,8 +348,7 @@ public class ParserServiceImpl {
 
                 location.setCoordinates(getCoordinates(csvRecord,"X COORDINATE", "Y COORDINATE" ));
                 location.setCommunityArea(csvRecord.get("Community Area"));
-                location.setLatitude(!StringUtils.isEmpty(csvRecord.get("LATITUDE")) ? Double.parseDouble(csvRecord.get("LATITUDE")) : null);
-                location.setLongitude(!StringUtils.isEmpty(csvRecord.get("LONGITUDE")) ? Double.parseDouble(csvRecord.get("LONGITUDE")) : null);
+                location.setLongitudeLatitude(getCoordinates(csvRecord, "LONGITUDE", "LATITUDE"));
                 location.setLocationJson(csvRecord.get("LOCATION"));
                 location.setPoliceDistrict(csvRecord.get("Police District"));
                 location.setAddress(csvRecord.get("STREET ADDRESS"));
@@ -409,8 +404,7 @@ public class ParserServiceImpl {
 
                 location.setCoordinates(getCoordinates(csvRecord,"X Coordinate", "Y Coordinate" ));
                 location.setCommunityArea(csvRecord.get("Community Area"));
-                location.setLatitude(!StringUtils.isEmpty(csvRecord.get("Latitude")) ? Double.parseDouble(csvRecord.get("Latitude")) : null);
-                location.setLongitude(!StringUtils.isEmpty(csvRecord.get("Longitude")) ? Double.parseDouble(csvRecord.get("Longitude")) : null);
+                location.setLongitudeLatitude(getCoordinates(csvRecord, "Longitude", "Latitude"));
                 location.setLocationJson(csvRecord.get("Location"));
                 location.setPoliceDistrict(csvRecord.get("Police District"));
                 location.setAddress(csvRecord.get("Street Address"));
@@ -469,8 +463,7 @@ public class ParserServiceImpl {
 
                 location.setCoordinates(getCoordinates(csvRecord,"X Coordinate", "Y Coordinate" ));
                 location.setCommunityArea(csvRecord.get("Community Area"));
-                location.setLatitude(!StringUtils.isEmpty(csvRecord.get("Latitude")) ? Double.parseDouble(csvRecord.get("Latitude")) : null);
-                location.setLongitude(!StringUtils.isEmpty(csvRecord.get("Longitude")) ? Double.parseDouble(csvRecord.get("Longitude")) : null);
+                location.setLongitudeLatitude(getCoordinates(csvRecord, "Longitude", "Latitude"));
                 location.setLocationJson(csvRecord.get("Location"));
                 location.setPoliceDistrict(csvRecord.get("Police District"));
                 location.setAddress(csvRecord.get("Street Address"));
@@ -522,8 +515,7 @@ public class ParserServiceImpl {
 
                 location.setCoordinates(getCoordinates(csvRecord,"X Coordinate", "Y Coordinate" ));
                 location.setCommunityArea(csvRecord.get("Community Area"));
-                location.setLatitude(!StringUtils.isEmpty(csvRecord.get("Latitude")) ? Double.parseDouble(csvRecord.get("Latitude")) : null);
-                location.setLongitude(!StringUtils.isEmpty(csvRecord.get("Longitude")) ? Double.parseDouble(csvRecord.get("Longitude")) : null);
+                location.setLongitudeLatitude(getCoordinates(csvRecord, "Longitude", "Latitude"));
                 location.setLocationJson(csvRecord.get("Location"));
                 location.setPoliceDistrict(csvRecord.get("Police District"));
                 location.setAddress(csvRecord.get("Street Address"));
@@ -577,8 +569,7 @@ public class ParserServiceImpl {
 
                 location.setCoordinates(getCoordinates(csvRecord,"X Coordinate", "Y Coordinate" ));
                 location.setCommunityArea(csvRecord.get("Community Area"));
-                location.setLatitude(!StringUtils.isEmpty(csvRecord.get("Latitude")) ? Double.parseDouble(csvRecord.get("Latitude")) : null);
-                location.setLongitude(!StringUtils.isEmpty(csvRecord.get("Longitude")) ? Double.parseDouble(csvRecord.get("Longitude")) : null);
+                location.setLongitudeLatitude(getCoordinates(csvRecord, "Longitude", "Latitude"));
                 location.setLocationJson(csvRecord.get("Location"));
                 location.setPoliceDistrict(csvRecord.get("Police District"));
                 location.setAddress(csvRecord.get("Street Address"));
@@ -630,8 +621,7 @@ public class ParserServiceImpl {
 
                 location.setCoordinates(getCoordinates(csvRecord,"X Coordinate", "Y Coordinate" ));
                 location.setCommunityArea(csvRecord.get("Community Area"));
-                location.setLatitude(!StringUtils.isEmpty(csvRecord.get("Latitude")) ? Double.parseDouble(csvRecord.get("Latitude")) : null);
-                location.setLongitude(!StringUtils.isEmpty(csvRecord.get("Longitude")) ? Double.parseDouble(csvRecord.get("Longitude")) : null);
+                location.setLongitudeLatitude(getCoordinates(csvRecord, "Longitude", "Latitude"));
                 location.setLocationJson(csvRecord.get("Location"));
                 location.setPoliceDistrict(csvRecord.get("Police District"));
                 location.setAddress(csvRecord.get("Street Address"));
@@ -681,8 +671,7 @@ public class ParserServiceImpl {
 
                 location.setCoordinates(getCoordinates(csvRecord,"X Coordinate", "Y Coordinate" ));
                 location.setCommunityArea(csvRecord.get("Community Area"));
-                location.setLatitude(!StringUtils.isEmpty(csvRecord.get("Latitude")) ? Double.parseDouble(csvRecord.get("Latitude")) : null);
-                location.setLongitude(!StringUtils.isEmpty(csvRecord.get("Longitude")) ? Double.parseDouble(csvRecord.get("Longitude")) : null);
+                location.setLongitudeLatitude(getCoordinates(csvRecord, "Longitude", "Latitude"));
                 location.setLocationJson(csvRecord.get("Location"));
                 location.setPoliceDistrict(csvRecord.get("Police District"));
                 location.setAddress(csvRecord.get("Street Address"));
@@ -732,8 +721,7 @@ public class ParserServiceImpl {
 
                 location.setCoordinates(getCoordinates(csvRecord,"X Coordinate", "Y Coordinate" ));
                 location.setCommunityArea(csvRecord.get("Community Area"));
-                location.setLatitude(!StringUtils.isEmpty(csvRecord.get("Latitude")) ? Double.parseDouble(csvRecord.get("Latitude")) : null);
-                location.setLongitude(!StringUtils.isEmpty(csvRecord.get("Longitude")) ? Double.parseDouble(csvRecord.get("Longitude")) : null);
+                location.setLongitudeLatitude(getCoordinates(csvRecord, "Longitude", "Latitude"));
                 location.setLocationJson(csvRecord.get("Location"));
                 location.setPoliceDistrict(csvRecord.get("Police District"));
                 location.setAddress(csvRecord.get("Street Address"));
@@ -765,11 +753,11 @@ public class ParserServiceImpl {
         }
     }
 
-    private Point getCoordinates(CSVRecord csvRecord, String x, String y){
+    private GeoJsonPoint getCoordinates(CSVRecord csvRecord, String x, String y){
         String xCoord = csvRecord.get(x);
         String yCoord = csvRecord.get(y);
         return !StringUtils.isEmpty(xCoord) && !StringUtils.isEmpty(yCoord)
-                ? new Point(Double.parseDouble(xCoord), Double.parseDouble(yCoord))
+                ? new GeoJsonPoint(Double.parseDouble(xCoord), Double.parseDouble(yCoord))
                 : null;
     }
 

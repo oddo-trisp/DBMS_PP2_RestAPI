@@ -33,6 +33,10 @@ public class QueryServiceImpl {
         return serviceRequestRepository.query5(startDate, endDate);
     }
 
+    public List query6(Date startDate, Double minLat, Double maxLat, Double minLon, Double maxLon) {
+        return serviceRequestRepository.query6(startDate, minLat, maxLat, minLon, maxLon);
+    }
+
     public List query7(Date startDate) { return serviceRequestRepository.query7(startDate); }
 
     public List query8() { return citizenRepository.findTop50ByVotesNotNullOrderByVotesDesc(); }

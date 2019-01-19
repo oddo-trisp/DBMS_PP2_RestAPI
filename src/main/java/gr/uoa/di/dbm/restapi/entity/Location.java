@@ -1,6 +1,6 @@
 package gr.uoa.di.dbm.restapi.entity;
 
-import org.springframework.data.geo.Point;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.io.Serializable;
@@ -9,11 +9,8 @@ import java.io.Serializable;
 public class Location implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	@Field("latitude")
-	private Double latitude;
-
-	@Field("longitude")
-	private Double longitude;
+	@Field("longitudeLatitude")
+	private GeoJsonPoint longitudeLatitude;
 
 	@Field("address")
 	private String address;
@@ -22,7 +19,7 @@ public class Location implements Serializable {
 	private String communityArea;
 
 	@Field("coordinates")
-	private Point coordinates;
+	private GeoJsonPoint coordinates;
 
 	@Field("locationJson")
 	private String locationJson;
@@ -42,22 +39,13 @@ public class Location implements Serializable {
 	public Location() {
 	}
 
-	public Double getLatitude() {
-		return latitude;
+	public GeoJsonPoint getLongitudeLatitude() {
+		return longitudeLatitude;
 	}
 
-	public void setLatitude(Double latitude) {
-		this.latitude = latitude;
+	public void setLongitudeLatitude(GeoJsonPoint longitudeLatitude) {
+		this.longitudeLatitude = longitudeLatitude;
 	}
-
-	public Double getLongitude() {
-		return longitude;
-	}
-
-	public void setLongitude(Double longitude) {
-		this.longitude = longitude;
-	}
-	
 
 	public String getAddress() {
 		return this.address;
@@ -75,11 +63,11 @@ public class Location implements Serializable {
 		this.communityArea = communityArea;
 	}
 
-	public Point getCoordinates() {
+	public GeoJsonPoint getCoordinates() {
 		return this.coordinates;
 	}
 
-	public void setCoordinates(Point coordinates) {
+	public void setCoordinates(GeoJsonPoint coordinates) {
 		this.coordinates = coordinates;
 	}
 

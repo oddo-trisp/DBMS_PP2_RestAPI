@@ -53,6 +53,17 @@ public class QueryController {
         return queryServiceImpl.query5(startDate, endDate);
     }
 
+    @RequestMapping(value = "/query6", method = RequestMethod.GET)
+    public List query6(@RequestParam Map<String,String> parameters) throws Exception {
+        Date startDate = dateFormat.parse(parameters.get("startDate"));
+        Double minLat = Double.valueOf(parameters.get("minLat"));
+        Double maxLat = Double.valueOf(parameters.get("maxLat"));
+        Double minLon = Double.valueOf(parameters.get("minLon"));
+        Double maxLon = Double.valueOf(parameters.get("maxLon"));
+        return queryServiceImpl.query6(startDate, minLat, maxLat, minLon, maxLon);
+    }
+
+
     @RequestMapping(value = "/query7", method = RequestMethod.GET)
     public List query7(@RequestParam Map<String,String> parameters) throws ParseException {
         Date startDate = dateFormat.parse(parameters.get("startDate"));

@@ -3,12 +3,13 @@ package gr.uoa.di.dbm.restapi.repo;
 import org.bson.BsonType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.geo.Box;
+import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -97,6 +98,30 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
 
         return result.getMappedResults();
     }
+
+    @Override
+    public List query6(Date startDate, Double minLat, Double maxLat, Double minLon, Double maxLon) {
+        Box boundingBox = new Box(new Point(minLon,maxLat), new Point(maxLon, minLat));
+
+        MatchOperation matchDateAndLocation = Aggregation.match(Criteria
+                .where("createDate").is(startDate)
+                .and("location.longitudeLatitude").within(boundingBox));
+
+        GroupOperation countServiceRequestsByType = Aggregation.group("requestType").count().as("incidents");
+        SortOperation sortByIncidentsDesc = Aggregation.sort(new Sort(Direction.DESC, "incidents"));
+        LimitOperation limitOperation = Aggregation.limit(1);
+
+        ProjectionOperation projectToMatchModel = Aggregation.project()
+                .andExpression("_id").as("requestType")
+                .andExpression("incidents").as("incidents");
+
+        Aggregation aggregation = newAggregation(matchDateAndLocation, countServiceRequestsByType, sortByIncidentsDesc, limitOperation, projectToMatchModel);
+
+        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
+
+        return result.getMappedResults();
+    }
+
 
     //TODO Bring all fields as result
     public List query7(Date startDate){
