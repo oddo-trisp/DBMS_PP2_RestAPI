@@ -8,4 +8,5 @@ public interface ServiceRequestRepositoryCustom {
     List query2(Date startDate, Date endDate, String requestType);
     List query4(String requestType);
     List query5(Date startDate, Date endDate);
+    List query7(Date startDate);
 }

@@ -43,7 +43,7 @@ public class QueryController {
     }
 
     @RequestMapping(value = "/query4", method = RequestMethod.GET)
-    public List query4(@RequestParam Map<String,String> parameters) throws ParseException {
+    public List query4(@RequestParam Map<String,String> parameters) {
         String requestType = parameters.get("requestType");
         return queryServiceImpl.query4(requestType);
     }
@@ -53,6 +53,17 @@ public class QueryController {
         Date startDate = dateFormat.parse(parameters.get("startDate"));
         Date endDate = dateFormat.parse(parameters.get("endDate"));
         return queryServiceImpl.query5(startDate, endDate);
+    }
+
+    @RequestMapping(value = "/query7", method = RequestMethod.GET)
+    public List query7(@RequestParam Map<String,String> parameters) throws ParseException {
+        Date startDate = dateFormat.parse(parameters.get("startDate"));
+        return queryServiceImpl.query7(startDate);
+    }
+
+    @RequestMapping(value = "/query8", method = RequestMethod.GET)
+    public List query8() {
+        return queryServiceImpl.query8();
     }
 
     /*@RequestMapping(value = "/bar", method = RequestMethod.GET)

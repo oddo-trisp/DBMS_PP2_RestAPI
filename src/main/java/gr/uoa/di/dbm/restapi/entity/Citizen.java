@@ -31,7 +31,7 @@ public class Citizen implements Serializable {
     @Field("email")
     private String email;
 
-    @Transient
+    @Field("votes")
     private int votes;
 
     public String getCitizenId() {

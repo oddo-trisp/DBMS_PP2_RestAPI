@@ -70,6 +70,7 @@ public class ParserServiceImpl {
         alleyLightsOutParser();
         streetLightsOutAllParser();
         streetLightsOutOneParser();
+        citizenRepository.saveAll(citizens);
     }
 
     private void parseCitizens() {
@@ -777,7 +778,7 @@ public class ParserServiceImpl {
             int listRealEnd = citizens.size();
             int listStart = randomInt(0,listRealEnd);
             int possibleEnd = randomInt(listStart, listStart+49);
-            int listEnd = possibleEnd <= listRealEnd ? possibleEnd : listRealEnd;      //Max 1000 upvoters
+            int listEnd = possibleEnd <= listRealEnd ? possibleEnd : listRealEnd;
 
             List<String> votes = citizens.subList(listStart,listEnd)
                     .stream()

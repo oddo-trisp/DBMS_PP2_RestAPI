@@ -1,6 +1,6 @@
 package gr.uoa.di.dbm.restapi.service;
 
-import gr.uoa.di.dbm.restapi.entity.ServiceRequest;
+import gr.uoa.di.dbm.restapi.repo.CitizenRepository;
 import gr.uoa.di.dbm.restapi.repo.ServiceRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,10 +12,12 @@ import java.util.List;
 public class QueryServiceImpl {
 
     private final ServiceRequestRepository serviceRequestRepository;
+    private final CitizenRepository citizenRepository;
 
     @Autowired
-    public QueryServiceImpl(ServiceRequestRepository serviceRequestRepository) {
+    public QueryServiceImpl(ServiceRequestRepository serviceRequestRepository, CitizenRepository citizenRepository) {
         this.serviceRequestRepository = serviceRequestRepository;
+        this.citizenRepository = citizenRepository;
     }
 
     public List query1(Date startDate, Date endDate){
@@ -29,6 +31,10 @@ public class QueryServiceImpl {
     public List query5(Date startDate, Date endDate){
         return serviceRequestRepository.query5(startDate, endDate);
     }
+
+    public List query7(Date startDate) { return serviceRequestRepository.query7(startDate); }
+
+    public List query8() { return citizenRepository.findTop50ByVotesNotNullOrderByVotesDesc(); }
 
     /*public List<ServiceRequest> bar(Date creationDate, Date completionDate, String type){
         return serviceRequestRepository.findByCreateDateGreaterThanEqualAndCompletionDateLessThanEqualAndRequestType(creationDate, completionDate, type);

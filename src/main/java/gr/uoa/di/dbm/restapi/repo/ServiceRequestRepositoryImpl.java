@@ -1,5 +1,6 @@
 package gr.uoa.di.dbm.restapi.repo;
 
+import org.bson.BsonType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -90,6 +91,28 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
                 .andExpression("average_completion_period").as("averageCompletionPeriod");
 
         Aggregation aggregation = newAggregation(matchDates, avgServiceRequestsByTypeOnCompletionPeriod, projectToMatchModel);
+
+        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "service_request", String.class);
+
+        return result.getMappedResults();
+    }
+
+    //TODO Bring all fields as result
+    public List query7(Date startDate){
+
+        //Check for null completion date because abandoned building don't have that field
+        MatchOperation matchDates = Aggregation.match(Criteria
+                .where("create_date").is(startDate)
+                .and("upvotes").type(BsonType.ARRAY.getValue()));
+
+        SortOperation sortByUpvotes = Aggregation.sort(new Sort(Direction.DESC, "number_of_upvotes"));
+
+        LimitOperation limitToOnlyFifty = Aggregation.limit(50);
+
+        ProjectionOperation projectToMatchModel = Aggregation.project()
+                .andExpression("upvotes").size().as("number_of_upvotes");
+
+        Aggregation aggregation = newAggregation(matchDates,projectToMatchModel,sortByUpvotes,limitToOnlyFifty);
 
         AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "service_request", String.class);
 
