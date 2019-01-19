@@ -5,11 +5,11 @@ import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-@Document(collection="service_request")
-@TypeAlias("pot_holes_reported")
+@Document(collection="serviceRequest")
+@TypeAlias("potHolesReported")
 public class PotHolesReported extends ServiceRequest {
 
-	@Field("holes_num")
+	@Field("holesNum")
 	private Long holesNum;
 
 	public PotHolesReported() {

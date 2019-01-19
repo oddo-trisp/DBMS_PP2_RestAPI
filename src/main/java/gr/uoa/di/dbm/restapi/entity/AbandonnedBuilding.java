@@ -5,29 +5,29 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 
-@Document(collection="service_request")
-@TypeAlias("abandonned_buildings")
+@Document(collection="serviceRequest")
+@TypeAlias("abandonnedBuilding")
 public class AbandonnedBuilding extends ServiceRequest {
 
-	@Field("building_dangerous")
+	@Field("buildingDangerous")
 	private Boolean buildingDangerous;
 
-	@Field("building_entrance")
+	@Field("buildingEntrance")
 	private String buildingEntrance;
 
-	@Field("building_fire")
+	@Field("buildingFire")
 	private Boolean buildingFire;
 
-	@Field("building_location_on_the_lot")
+	@Field("buildingLocationOnTheLot")
 	private String buildingLocationOnTheLot;
 
-	@Field("building_open")
+	@Field("buildingOpen")
 	private String buildingOpen;
 
-	@Field("building_usage")
+	@Field("buildingUsage")
 	private Boolean buildingUsage;
 
-	@Field("building_vacant")
+	@Field("buildingVacant")
 	private String buildingVacant;
 
 	public AbandonnedBuilding() {

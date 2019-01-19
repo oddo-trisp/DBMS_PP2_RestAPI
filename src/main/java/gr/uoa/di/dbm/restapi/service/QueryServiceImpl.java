@@ -37,12 +37,8 @@ public class QueryServiceImpl {
 
     public List query8() { return citizenRepository.findTop50ByVotesNotNullOrderByVotesDesc(); }
 
-    public String insertIncident(Map<String,String> restParameters){
-        ServiceRequest serviceRequest;
-
-        String requestType = restParameters.getOrDefault("request_type",null);
-
-        return null;
+    public ServiceRequest insertIncident(ServiceRequest serviceRequest){
+        return serviceRequestRepository.save(serviceRequest);
     }
 
     public String upvoteIncident(String incidentId, String name){

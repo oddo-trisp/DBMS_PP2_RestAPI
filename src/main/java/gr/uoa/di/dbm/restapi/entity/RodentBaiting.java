@@ -4,17 +4,17 @@ import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-@Document(collection="service_request")
-@TypeAlias("rodent_baiting")
+@Document(collection="serviceRequest")
+@TypeAlias("rodentBaiting")
 public class RodentBaiting extends ServiceRequest {
 
-	@Field("baited_num")
+	@Field("baitedNum")
 	private Long baitedNum;
 
-	@Field("garbage_num")
+	@Field("garbageNum")
 	private Long garbageNum;
 
-	@Field("rats_num")
+	@Field("ratsNum")
 	private Long ratsNum;
 
 	public RodentBaiting() {

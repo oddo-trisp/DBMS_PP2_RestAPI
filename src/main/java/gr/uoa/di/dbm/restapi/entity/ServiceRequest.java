@@ -11,21 +11,21 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-/*@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_class")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_class")
 @JsonSubTypes({
-		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
-		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
-		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
-		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
-		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
-		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
-		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
-		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
-		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
-		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
-		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
-		@JsonSubTypes.Type(name = "graffity_removal", value = GraffityRemoval.class),
-})*/
+		@JsonSubTypes.Type(name = "abandonnedBuilding", value = AbandonnedBuilding.class),
+		@JsonSubTypes.Type(name = "abandonnedVehicle", value = AbandonnedVehicle.class),
+		@JsonSubTypes.Type(name = "alleyLightsOut", value = AlleyLightsOut.class),
+		@JsonSubTypes.Type(name = "garbageCart", value = GarbageCart.class),
+		@JsonSubTypes.Type(name = "graffityRemoval", value = GraffityRemoval.class),
+		@JsonSubTypes.Type(name = "lightsOutAll", value = LightsOutAll.class),
+		@JsonSubTypes.Type(name = "lightsOutOne", value = LightsOutOne.class),
+		@JsonSubTypes.Type(name = "potHolesReported", value = PotHolesReported.class),
+		@JsonSubTypes.Type(name = "rodentBaiting", value = RodentBaiting.class),
+		@JsonSubTypes.Type(name = "sanitationCodeComplaint", value = SanitationCodeComplaint.class),
+		@JsonSubTypes.Type(name = "treeDebri", value = TreeDebri.class),
+		@JsonSubTypes.Type(name = "trimTree", value = TrimTree.class)
+})
 @Document(collection="serviceRequest")
 @TypeAlias("serviceRequest")
 public class ServiceRequest implements Serializable {
@@ -34,22 +34,22 @@ public class ServiceRequest implements Serializable {
 	@Id
 	private String serviceRequestId;
 
-	@Field("completion_date")
+	@Field("completionDate")
 	private Date completionDate;
 
-	@Field("create_date")
+	@Field("createDate")
 	private Date createDate;
 
-	@Field("current_activity")
+	@Field("currentActivity")
 	private String currentActivity;
 
-	@Field("most_recent_action")
+	@Field("mostRecentAction")
 	private String mostRecentAction;
 
-	@Field("request_type")
+	@Field("requestType")
 	private String requestType;
 
-	@Field("service_request_no")
+	@Field("serviceRequestNo")
 	private String serviceRequestNo;
 
 	@Field("status")

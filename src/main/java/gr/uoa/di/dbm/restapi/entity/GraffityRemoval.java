@@ -5,11 +5,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 
-@Document(collection="service_request")
-@TypeAlias("graffity_removal")
+@Document(collection="serviceRequest")
+@TypeAlias("graffityRemoval")
 public class GraffityRemoval extends ServiceRequest {
 
-	@Field("graffity_location")
+	@Field("graffityLocation")
 	private String graffityLocation;
 
 	@Field("surface")

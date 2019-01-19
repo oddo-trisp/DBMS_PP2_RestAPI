@@ -4,11 +4,11 @@ import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-@Document(collection="service_request")
-@TypeAlias("tree_debris")
+@Document(collection="serviceRequest")
+@TypeAlias("treeDebri")
 public class TreeDebri extends ServiceRequest {
 
-	@Field("debris_location")
+	@Field("debrisLocation")
 	private String debrisLocation;
 
 	public TreeDebri() {

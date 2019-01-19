@@ -1,6 +1,5 @@
 package gr.uoa.di.dbm.restapi.controller;
 
-import gr.uoa.di.dbm.restapi.entity.GraffityRemoval;
 import gr.uoa.di.dbm.restapi.entity.ServiceRequest;
 import gr.uoa.di.dbm.restapi.service.QueryServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,12 +65,8 @@ public class QueryController {
     }
 
     @RequestMapping(value = "/insertIncident", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public String insertIncident(@RequestParam Map<String,String> parameters, @RequestBody ServiceRequest serviceRequest) {
-        if(serviceRequest instanceof GraffityRemoval)
-            System.out.println(serviceRequest.getClass());
-        else
-            System.out.println(serviceRequest.getClass());
-        return queryServiceImpl.insertIncident(parameters);
+    public ServiceRequest insertIncident(@RequestBody ServiceRequest serviceRequest) {
+        return queryServiceImpl.insertIncident(serviceRequest);
     }
 
     @RequestMapping(value = "/upvoteIncident", method = RequestMethod.POST)

@@ -5,20 +5,20 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 
-@Document(collection="service_request")
-@TypeAlias("abandonned_vehicles")
+@Document(collection="serviceRequest")
+@TypeAlias("abandonnedVehicle")
 public class AbandonnedVehicle extends ServiceRequest {
 
-	@Field("days_parked")
+	@Field("daysParked")
 	private Double daysParked;
 
-	@Field("license_plate")
+	@Field("licensePlate")
 	private String licensePlate;
 
-	@Field("vehicle_color")
+	@Field("vehicleColor")
 	private String vehicleColor;
 
-	@Field("vehicle_model")
+	@Field("vehicleModel")
 	private String vehicleModel;
 
 	public AbandonnedVehicle() {

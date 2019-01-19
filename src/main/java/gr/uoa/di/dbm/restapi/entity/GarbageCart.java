@@ -5,11 +5,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 
-@Document(collection="service_request")
-@TypeAlias("garbage_cart")
+@Document(collection="serviceRequest")
+@TypeAlias("garbageCart")
 public class GarbageCart extends ServiceRequest {
 
-	@Field("carts_delivered")
+	@Field("cartsDelivered")
 	private Long cartsDelivered;
 
 	public GarbageCart() {

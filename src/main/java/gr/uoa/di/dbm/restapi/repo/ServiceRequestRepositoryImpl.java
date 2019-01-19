@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -26,8 +27,8 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
 
     public List query1(Date startDate, Date endDate){
         MatchOperation matchDates = Aggregation.match(Criteria
-                .where("create_date").gte(startDate).lte(endDate));
-        GroupOperation countServiceRequestsByType = Aggregation.group("request_type").count().as("incidents");
+                .where("createDate").gte(startDate).lte(endDate));
+        GroupOperation countServiceRequestsByType = Aggregation.group("requestType").count().as("incidents");
         SortOperation sortByIncidentsDesc = Aggregation.sort(new Sort(Direction.DESC, "incidents"));
         ProjectionOperation projectToMatchModel = Aggregation.project()
                 .andExpression("_id").as("requestType")
@@ -35,35 +36,35 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
 
         Aggregation aggregation = newAggregation(matchDates, countServiceRequestsByType, sortByIncidentsDesc, projectToMatchModel);
 
-        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "service_request", String.class);
+        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
 
         return result.getMappedResults();
     }
 
+    //TODO Date format on results
     public List query2(Date startDate, Date endDate, String requestType) {
 
-        MatchOperation matchDates = Aggregation.match(Criteria
-                .where("create_date").gte(startDate).lte(endDate));
-        MatchOperation matchRequestType = Aggregation.match(Criteria
-                .where("request_type").is(requestType));
+        MatchOperation matchDatesAndRequestType = Aggregation.match(Criteria
+                .where("createDate").gte(startDate).lte(endDate)
+                .and("requestType").is(requestType));
 
-        GroupOperation countServiceRequestsByDate = Aggregation.group("create_date").count().as("incidents");
+        GroupOperation countServiceRequestsByDate = Aggregation.group("createDate").count().as("incidents");
         SortOperation sortByDateDesc = Aggregation.sort(new Sort(Direction.DESC, "incidents"));
 
         ProjectionOperation projectToMatchModel = Aggregation.project()
-                .andExpression("create_date").as("createDate")
+                .andExpression("createDate").as("createDate")
                 .andExpression("incidents").as("incidents");
 
-        Aggregation aggregation = newAggregation(matchDates, matchRequestType, countServiceRequestsByDate, sortByDateDesc, projectToMatchModel);
-        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "service_request", String.class);
+        Aggregation aggregation = newAggregation(matchDatesAndRequestType, countServiceRequestsByDate, sortByDateDesc, projectToMatchModel);
+        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
 
         return result.getMappedResults();
     }
 
     public List query4(String requestType) {
         MatchOperation matchRequestType = Aggregation.match(Criteria
-                .where("request_type").is(requestType));
-        GroupOperation countServiceRequestsByWard = Aggregation.group("location.ward","request_type").count().as("totalRequests");
+                .where("requestType").is(requestType));
+        GroupOperation countServiceRequestsByWard = Aggregation.group("location.ward","requestType").count().as("totalRequests");
         SortOperation sortByServiceRequests = Aggregation.sort(new Sort(Direction.ASC, "_id.ward","totalRequests"));
 
         ProjectionOperation projectToMatchModel = Aggregation.project()
@@ -71,7 +72,7 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
                 .andExpression("totalRequests").as("totalRequests");
 
         Aggregation aggregation = newAggregation(matchRequestType, countServiceRequestsByWard, sortByServiceRequests, projectToMatchModel);
-        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "service_request", String.class);
+        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
 
         return result.getMappedResults();
     }
@@ -80,19 +81,19 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
 
         //Check for null completion date because abandoned building don't have that field
         MatchOperation matchDates = Aggregation.match(Criteria
-                .where("create_date").gte(startDate).lte(endDate)
-                .and("completion_date").exists(true));
+                .where("createDate").gte(startDate).lte(endDate)
+                .and("completionDate").exists(true));
 
-        ArithmeticOperators.Subtract completionPeriod = ArithmeticOperators.Subtract.valueOf("completion_date").subtract("create_date");
-        GroupOperation avgServiceRequestsByTypeOnCompletionPeriod = Aggregation.group("request_type").avg(completionPeriod).as("average_completion_period");
+        ArithmeticOperators.Subtract completionPeriod = ArithmeticOperators.Subtract.valueOf("completionDate").subtract("createDate");
+        GroupOperation avgServiceRequestsByTypeOnCompletionPeriod = Aggregation.group("requestType").avg(completionPeriod).as("averageCompletionPeriod");
 
         ProjectionOperation projectToMatchModel = Aggregation.project()
                 .andExpression("_id").as("requestType")
-                .andExpression("average_completion_period").as("averageCompletionPeriod");
+                .andExpression("averageCompletionPeriod").as("averageCompletionPeriod");
 
         Aggregation aggregation = newAggregation(matchDates, avgServiceRequestsByTypeOnCompletionPeriod, projectToMatchModel);
 
-        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "service_request", String.class);
+        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
 
         return result.getMappedResults();
     }
@@ -102,19 +103,19 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
 
         //Check for null completion date because abandoned building don't have that field
         MatchOperation matchDates = Aggregation.match(Criteria
-                .where("create_date").is(startDate)
+                .where("createDate").is(startDate)
                 .and("upvotes").type(BsonType.ARRAY.getValue()));
 
-        SortOperation sortByUpvotes = Aggregation.sort(new Sort(Direction.DESC, "number_of_upvotes"));
+        SortOperation sortByUpvotes = Aggregation.sort(new Sort(Direction.DESC, "numberOfUpvotes"));
 
         LimitOperation limitToOnlyFifty = Aggregation.limit(50);
 
         ProjectionOperation projectToMatchModel = Aggregation.project()
-                .andExpression("upvotes").size().as("number_of_upvotes");
+                .andExpression("upvotes").size().as("numberOfUpvotes");
 
         Aggregation aggregation = newAggregation(matchDates,projectToMatchModel,sortByUpvotes,limitToOnlyFifty);
 
-        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "service_request", String.class);
+        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
 
         return result.getMappedResults();
     }

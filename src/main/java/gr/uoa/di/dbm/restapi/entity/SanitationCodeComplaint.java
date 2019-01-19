@@ -5,11 +5,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 
-@Document(collection="service_request")
-@TypeAlias("sanitation_code_complaints")
+@Document(collection="serviceRequest")
+@TypeAlias("sanitationCodeComplaint")
 public class SanitationCodeComplaint extends ServiceRequest {
 
-	@Field("nature_violation")
+	@Field("natureViolation")
 	private String natureViolation;
 
 	public SanitationCodeComplaint() {

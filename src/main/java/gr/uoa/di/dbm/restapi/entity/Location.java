@@ -18,16 +18,16 @@ public class Location implements Serializable {
 	@Field("address")
 	private String address;
 
-	@Field("community_area")
+	@Field("communityArea")
 	private String communityArea;
 
 	@Field("coordinates")
 	private Point coordinates;
 
-	@Field("location_json")
+	@Field("locationJson")
 	private String locationJson;
 
-	@Field("police_district")
+	@Field("policeDistrict")
 	private String policeDistrict;
 
 	@Field("ssa")
@@ -36,7 +36,7 @@ public class Location implements Serializable {
 	@Field("ward")
 	private String ward;
 
-	@Field("zip_code")
+	@Field("zipCode")
 	private String zipCode;
 
 	public Location() {
