@@ -6,6 +6,7 @@ import gr.uoa.di.dbm.restapi.repo.ServiceRequestRepository;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.stereotype.Service;
@@ -58,7 +59,7 @@ public class ParserServiceImpl {
 
     public void parseData() {
         parseCitizens();
-        /*graffityRemovalParser();
+        graffityRemovalParser();
         abandonedBuildingsParser();
         abandonedVehiclesParser();
         garbageCartsParser();
@@ -68,7 +69,7 @@ public class ParserServiceImpl {
         treeDebrisParser();
         trimTreesParser();
         alleyLightsOutParser();
-        streetLightsOutAllParser();*/
+        streetLightsOutAllParser();
         streetLightsOutOneParser();
         citizenRepository.saveAll(citizens);
     }
@@ -768,11 +769,11 @@ public class ParserServiceImpl {
             int possibleEnd = randomInt(listStart, listStart+49);
             int listEnd = possibleEnd <= listRealEnd ? possibleEnd : listRealEnd;
 
-            List<String> votes = citizens.subList(listStart,listEnd)
+            List<ObjectId> votes = citizens.subList(listStart,listEnd)
                     .stream()
                     .filter(c -> c.getVotes() < 1000)
                     .peek(Citizen::increaseVotes)
-                    .map(Citizen::getCitizenId)
+                    .map(Citizen::citizenIdToObjectId)
                     .collect(Collectors.toList());
 
             serviceRequest.setUpvotes(votes);

@@ -1,5 +1,6 @@
 package gr.uoa.di.dbm.restapi.entity;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
@@ -92,5 +93,9 @@ public class Citizen implements Serializable {
 
     public void increaseVotes(){
         this.votes++;
+    }
+
+    public ObjectId citizenIdToObjectId(){
+        return new ObjectId(citizenId);
     }
 }
