@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 
-public interface CitizenRepository extends MongoRepository<Citizen, String> {
+public interface CitizenRepository extends MongoRepository<Citizen, String>, CitizenRepositoryCustom {
     List<Citizen> findTop50ByVotesNotNullOrderByVotesDesc();
     Citizen findByName(String name);
 }

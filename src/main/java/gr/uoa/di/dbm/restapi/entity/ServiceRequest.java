@@ -2,7 +2,6 @@ package gr.uoa.di.dbm.restapi.entity;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -29,7 +28,7 @@ import java.util.List;
 })
 @Document(collection="serviceRequest")
 @TypeAlias("serviceRequest")
-public class ServiceRequest implements Serializable {
+public abstract class ServiceRequest implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
@@ -60,7 +59,7 @@ public class ServiceRequest implements Serializable {
 	private Location location;
 
 	@Field("upvotes")
-	private List<ObjectId> upvotes;
+	private List<Citizen> upvotes;
 
 	public ServiceRequest() {
 	}
@@ -137,11 +136,11 @@ public class ServiceRequest implements Serializable {
 		this.location = location;
 	}
 
-	public List<ObjectId> getUpvotes() {
+	public List<Citizen> getUpvotes() {
 		return upvotes;
 	}
 
-	public void setUpvotes(List<ObjectId> upvotes) {
+	public void setUpvotes(List<Citizen> upvotes) {
 		this.upvotes = upvotes;
 	}
 }

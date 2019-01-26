@@ -2,6 +2,7 @@ package gr.uoa.di.dbm.restapi.repo;
 
 import org.bson.BsonType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.geo.Box;
 import org.springframework.data.geo.Point;
@@ -99,7 +100,6 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
         return result.getMappedResults();
     }
 
-    @Override
     public List query6(Date startDate, Double minLat, Double maxLat, Double minLon, Double maxLon) {
         Box boundingBox = new Box(new Point(minLon,maxLat), new Point(maxLon, minLat));
 
@@ -139,6 +139,32 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
                 .andExpression("upvotes").size().as("numberOfUpvotes");
 
         Aggregation aggregation = newAggregation(matchDates,projectToMatchModel,sortByUpvotes,limitToOnlyFifty);
+
+        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
+
+        return result.getMappedResults();
+    }
+
+    //TODO recheck!!!!!
+    public List query10(){
+        //Check for null completion date because abandoned building don't have that field
+        MatchOperation matchType = Aggregation.match(Criteria
+                .where("upvotes").type(BsonType.ARRAY.getValue()));
+
+        UnwindOperation unwindUpVotes = Aggregation.unwind("upvotes");
+
+        GroupOperation groupUpVotes = Aggregation.group("_id").addToSet("upvotes.phone").as("distPhones")
+                .addToSet("upvotes.name").as("distVotes");
+
+        ProjectionOperation projectToMatchModel = Aggregation.project()
+                .andExpression("distPhones").size().as("numberOfPhones")
+                .andExpression("distVotes").size().as("numberOfUpvotes");
+        ProjectionOperation projectionOperation = Aggregation.project("numberOfPhones", "numberOfUpvotes")
+                .andExpression("numberOfPhones==numberOfUpvotes").as("isLess");
+
+        MatchOperation matchNumber = Aggregation.match(Criteria.where("isLess").is(true));
+
+        Aggregation aggregation = newAggregation(matchType,unwindUpVotes,groupUpVotes,projectToMatchModel,projectionOperation,matchNumber);
 
         AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
 

@@ -41,6 +41,12 @@ public class QueryServiceImpl {
 
     public List query8() { return citizenRepository.findTop50ByVotesNotNullOrderByVotesDesc(); }
 
+    public List query9() { return citizenRepository.query9(); }
+
+    public List query10() { return serviceRequestRepository.query10(); }
+
+    public List query11(String name) { return citizenRepository.query11(name); }
+
     public ServiceRequest insertIncident(ServiceRequest serviceRequest){
         return serviceRequestRepository.save(serviceRequest);
     }

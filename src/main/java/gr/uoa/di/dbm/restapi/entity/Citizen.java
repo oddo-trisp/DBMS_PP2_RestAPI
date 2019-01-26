@@ -1,13 +1,13 @@
 package gr.uoa.di.dbm.restapi.entity;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Document(collection="citizen")
 @TypeAlias("citizen")
@@ -33,7 +33,10 @@ public class Citizen implements Serializable {
     private String email;
 
     @Field("votes")
-    private int votes;
+    private Integer votes;
+
+    @Field("upvotedRequests")
+    private List<UpvotedRequest> upvotedRequests;
 
     public String getCitizenId() {
         return citizenId;
@@ -83,11 +86,11 @@ public class Citizen implements Serializable {
         this.email = email;
     }
 
-    public int getVotes() {
+    public Integer getVotes() {
         return votes;
     }
 
-    public void setVotes(int votes) {
+    public void setVotes(Integer votes) {
         this.votes = votes;
     }
 
@@ -95,7 +98,25 @@ public class Citizen implements Serializable {
         this.votes++;
     }
 
-    public ObjectId citizenIdToObjectId(){
-        return new ObjectId(citizenId);
+    public List<UpvotedRequest> getUpvotedRequests() {
+        return upvotedRequests;
+    }
+
+    public void setUpvotedRequests(List<UpvotedRequest> upvotedRequests) {
+        this.upvotedRequests = upvotedRequests;
+    }
+
+    public void addUpvotedRequest(UpvotedRequest serviceRequest){
+        if(upvotedRequests == null)
+            upvotedRequests = new ArrayList<>();
+        upvotedRequests.add(serviceRequest);
+    }
+
+    public Citizen getVoterFromCitizen(){
+        Citizen citizen = new Citizen();
+        citizen.citizenId = citizenId;
+        citizen.phone = phone;
+        citizen.name = name;
+        return citizen;
     }
 }

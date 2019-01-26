@@ -75,6 +75,22 @@ public class QueryController {
         return queryServiceImpl.query8();
     }
 
+    @RequestMapping(value = "/query9", method = RequestMethod.GET)
+    public List query9() {
+        return queryServiceImpl.query9();
+    }
+
+    @RequestMapping(value = "/query10", method = RequestMethod.GET)
+    public List query10() {
+        return queryServiceImpl.query10();
+    }
+
+    @RequestMapping(value = "/query11", method = RequestMethod.GET)
+    public List query11(@RequestParam Map<String,String> parameters) {
+        return queryServiceImpl.query11(parameters.get("name"));
+    }
+
+
     @RequestMapping(value = "/insertIncident", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ServiceRequest insertIncident(@RequestBody ServiceRequest serviceRequest) {
         return queryServiceImpl.insertIncident(serviceRequest);

@@ -17,7 +17,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -51,7 +53,7 @@ public class ParserServiceImpl {
         this.serviceRequestRepository = serviceRequestRepository;
         this.citizenRepository = citizenRepository;
         this.serviceRequests = new ArrayList<>();
-        this.citizens = new ArrayList<>();
+        this.citizens = null;
         this.dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         this.upvoteCounter = 0;
     }
@@ -59,9 +61,9 @@ public class ParserServiceImpl {
 
     public void parseData() {
         parseCitizens();
-        graffityRemovalParser();
+        //graffityRemovalParser();
         abandonedBuildingsParser();
-        abandonedVehiclesParser();
+        /*abandonedVehiclesParser();
         garbageCartsParser();
         potHolesReportedParser();
         rodentBaitingParser();
@@ -70,12 +72,14 @@ public class ParserServiceImpl {
         trimTreesParser();
         alleyLightsOutParser();
         streetLightsOutAllParser();
-        streetLightsOutOneParser();
+        streetLightsOutOneParser();*/
         citizenRepository.saveAll(citizens);
     }
 
     private void parseCitizens() {
         try {
+
+            Map<String, Citizen> citizenMap = new HashMap<>();
 
             Reader reader;
             reader = Files.newBufferedReader(Paths.get(CITIZENS));
@@ -93,9 +97,10 @@ public class ParserServiceImpl {
                 citizen.setEmail(csvRecord.get("email"));
                 citizen.setVotes(0);
 
-                citizens.add(citizen);
+                citizenMap.put(citizen.getName(), citizen);
             }
 
+            citizens = new ArrayList<>(citizenMap.values());
             citizens = citizenRepository.saveAll(citizens);
         }
         catch(Exception e) {
@@ -140,8 +145,6 @@ public class ParserServiceImpl {
                 graffityRemoval.setGraffityLocation(csvRecord.get("Where is the Graffiti located?"));
 
                 graffityRemoval.setLocation(location);
-
-                addUpvoters(graffityRemoval);
 
                 serviceRequests.add(graffityRemoval);
 
@@ -200,8 +203,6 @@ public class ParserServiceImpl {
 
                 abandonnedBuilding.setLocation(location);
 
-                addUpvoters(abandonnedBuilding);
-
                 serviceRequests.add(abandonnedBuilding);
 
                 //Write on batch size
@@ -259,8 +260,6 @@ public class ParserServiceImpl {
 
                 abandonnedVehicle.setLocation(location);
 
-                addUpvoters(abandonnedVehicle);
-
                 serviceRequests.add(abandonnedVehicle);
 
                 //Write on batch size
@@ -315,8 +314,6 @@ public class ParserServiceImpl {
 
                 garbageCart.setLocation(location);
 
-                addUpvoters(garbageCart);
-
                 serviceRequests.add(garbageCart);
 
                 //Write on batch size
@@ -370,8 +367,6 @@ public class ParserServiceImpl {
                         ? Double.valueOf(csvRecord.get("NUMBER OF POTHOLES FILLED ON BLOCK")).longValue() : null);
 
                 potHolesReported.setLocation(location);
-
-                addUpvoters(potHolesReported);
 
                 serviceRequests.add(potHolesReported);
 
@@ -430,8 +425,6 @@ public class ParserServiceImpl {
 
                 rodentBaiting.setLocation(location);
 
-                addUpvoters(rodentBaiting);
-
                 serviceRequests.add(rodentBaiting);
 
                 //Write on batch size
@@ -481,8 +474,6 @@ public class ParserServiceImpl {
                 sanitationCodeComplaint.setNatureViolation(csvRecord.get("What is the Nature of this Code Violation?"));
 
                 sanitationCodeComplaint.setLocation(location);
-
-                addUpvoters(sanitationCodeComplaint);
 
                 serviceRequests.add(sanitationCodeComplaint);
 
@@ -536,8 +527,6 @@ public class ParserServiceImpl {
 
                 treeDebri.setLocation(location);
 
-                addUpvoters(treeDebri);
-
                 serviceRequests.add(treeDebri);
 
                 //Write on batch size
@@ -588,8 +577,6 @@ public class ParserServiceImpl {
 
                 trimTree.setLocation(location);
 
-                addUpvoters(trimTree);
-
                 serviceRequests.add(trimTree);
 
                 //Write on batch size
@@ -637,8 +624,6 @@ public class ParserServiceImpl {
                 alleyLightsOut.setStatus(csvRecord.get("Status"));
                 alleyLightsOut.setRequestType(csvRecord.get("Type of Service Request"));
                 alleyLightsOut.setLocation(location);
-
-                addUpvoters(alleyLightsOut);
 
                 serviceRequests.add(alleyLightsOut);
 
@@ -688,8 +673,6 @@ public class ParserServiceImpl {
                 lightsOutAll.setRequestType(csvRecord.get("Type of Service Request"));
                 lightsOutAll.setLocation(location);
 
-                addUpvoters(lightsOutAll);
-
                 serviceRequests.add(lightsOutAll);
 
                 //Write on batch size
@@ -738,8 +721,6 @@ public class ParserServiceImpl {
                 lightsOutOne.setRequestType(csvRecord.get("Type of Service Request"));
                 lightsOutOne.setLocation(location);
 
-                addUpvoters(lightsOutOne);
-
                 serviceRequests.add(lightsOutOne);
 
                 //Write on batch size
@@ -769,11 +750,16 @@ public class ParserServiceImpl {
             int possibleEnd = randomInt(listStart, listStart+49);
             int listEnd = possibleEnd <= listRealEnd ? possibleEnd : listRealEnd;
 
-            List<ObjectId> votes = citizens.subList(listStart,listEnd)
+            UpvotedRequest upvotedRequest = new UpvotedRequest(
+                    serviceRequest.getServiceRequestId()
+                    ,serviceRequest.getLocation().getWard());
+
+            List<Citizen> votes = citizens.subList(listStart,listEnd)
                     .stream()
                     .filter(c -> c.getVotes() < 1000)
                     .peek(Citizen::increaseVotes)
-                    .map(Citizen::citizenIdToObjectId)
+                    .peek(c -> c.addUpvotedRequest(upvotedRequest))
+                    .map(Citizen::getVoterFromCitizen)
                     .collect(Collectors.toList());
 
             serviceRequest.setUpvotes(votes);
@@ -784,12 +770,16 @@ public class ParserServiceImpl {
 
     private void saveOnBatchSize(){
         if(serviceRequests.size() == BATCH_SIZE) {
+            serviceRequests = serviceRequestRepository.saveAll(serviceRequests);
+            serviceRequests.forEach(this::addUpvoters);
             serviceRequestRepository.saveAll(serviceRequests);
             serviceRequests.clear();
         }
     }
 
     private void saveRestData(){
+        serviceRequests = serviceRequestRepository.saveAll(serviceRequests);
+        serviceRequests.forEach(this::addUpvoters);
         serviceRequestRepository.saveAll(serviceRequests);
         serviceRequests.clear();
     }
