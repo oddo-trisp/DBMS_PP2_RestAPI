@@ -43,6 +43,13 @@ public class QueryController {
     }
 
     @ResponseBody
+    @RequestMapping(value = "/query3", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public List<String> query3(@RequestParam Map<String,String> parameters) throws ParseException {
+        Date startDate = dateFormat.parse(parameters.get("startDate"));
+        return queryServiceImpl.query3(startDate);
+    }
+
+    @ResponseBody
     @RequestMapping(value = "/query4", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<String> query4(@RequestParam Map<String,String> parameters) {
         String requestType = parameters.get("requestType");

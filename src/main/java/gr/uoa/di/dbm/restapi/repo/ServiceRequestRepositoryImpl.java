@@ -1,5 +1,6 @@
 package gr.uoa.di.dbm.restapi.repo;
 
+import com.mongodb.BasicDBObject;
 import org.bson.BsonType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -58,6 +59,40 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
                 .andExclude("_id");
 
         Aggregation aggregation = newAggregation(matchDatesAndRequestType, countServiceRequestsByDate, sortByDateDesc, projectToMatchModel);
+        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
+
+        return result.getMappedResults();
+    }
+
+    public List<String> query3(Date startDate) {
+
+        MatchOperation matchDates = Aggregation.match(Criteria
+                        .where("createDate").is(startDate));
+
+        GroupOperation countServiceRequestsByZip = Aggregation.group("location.zipCode")
+                .push("requestType").as("requests")
+                .count().as("total");
+        UnwindOperation unwindRequests = Aggregation.unwind("requests");
+
+        GroupOperation secondCountServiceRequests = Aggregation.group("_id","requests")
+                .first("total").as("total")
+                .count().as("reqCount");
+
+        SortOperation sortByReqCount = Aggregation.sort(new Sort(Direction.DESC, "_id._id","reqCount"));
+
+        BasicDBObject dbObject = new BasicDBObject("reqtype", "$_id.requests").append("count", "$reqCount");
+        GroupOperation groupToPush = Aggregation.group("_id._id")
+                .first("total").as("total")
+                .push(dbObject).as("requests");
+
+        ProjectionOperation projectToMatchModel = Aggregation.project()
+                .andExpression("_id").as("zip")
+                .andExpression("requests").slice(3).as("mostCommonRequestByZip")
+                .andExclude("_id");
+
+        Aggregation aggregation = newAggregation(matchDates,countServiceRequestsByZip,unwindRequests,secondCountServiceRequests
+                ,sortByReqCount,groupToPush,projectToMatchModel);
+
         AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
 
         return result.getMappedResults();

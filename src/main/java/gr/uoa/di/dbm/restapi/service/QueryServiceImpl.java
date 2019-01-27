@@ -27,9 +27,17 @@ public class QueryServiceImpl {
         return serviceRequestRepository.query1(startDate, endDate);
     }
 
-    public List<String> query2(Date startDate, Date endDate, String requestType) { return serviceRequestRepository.query2(startDate, endDate, requestType); }
+    public List<String> query2(Date startDate, Date endDate, String requestType) {
+        return serviceRequestRepository.query2(startDate, endDate, requestType);
+    }
 
-    public List<String> query4(String requestType) { return serviceRequestRepository.query4(requestType); }
+    public List<String> query3(Date startDate){
+        return serviceRequestRepository.query3(startDate);
+    }
+
+    public List<String> query4(String requestType) {
+        return serviceRequestRepository.query4(requestType);
+    }
 
     public List<String> query5(Date startDate, Date endDate){
         return serviceRequestRepository.query5(startDate, endDate);
@@ -39,15 +47,25 @@ public class QueryServiceImpl {
         return serviceRequestRepository.query6(startDate, minLat, maxLat, minLon, maxLon);
     }
 
-    public List<String> query7(Date startDate) { return serviceRequestRepository.query7(startDate); }
+    public List<String> query7(Date startDate) {
+        return serviceRequestRepository.query7(startDate);
+    }
 
-    public List<String> query8() { return citizenRepository.query8(); }
+    public List<String> query8() {
+        return citizenRepository.query8();
+    }
 
-    public List<String> query9() { return citizenRepository.query9(); }
+    public List<String> query9() {
+        return citizenRepository.query9();
+    }
 
-    public List<String> query10() { return serviceRequestRepository.query10(); }
+    public List<String> query10() {
+        return serviceRequestRepository.query10();
+    }
 
-    public List<String> query11(String name) { return citizenRepository.query11(name); }
+    public List<String> query11(String name) {
+        return citizenRepository.query11(name);
+    }
 
     public ServiceRequest insertIncident(ServiceRequest serviceRequest){
         return serviceRequestRepository.save(serviceRequest);
