@@ -7,7 +7,4 @@ import java.util.Date;
 import java.util.List;
 
 public interface ServiceRequestRepository extends MongoRepository<ServiceRequest, String>, ServiceRequestRepositoryCustom {
-    //List<ServiceRequest> findTop5ByUpvotesNotNullOrderByUpvotesDesc();
-    //List<ServiceRequest> findByCreateDateGreaterThanEqualAndCompletionDateLessThanEqualAndRequestType(Date from, Date to, String type);
-    //public void countByServiceRequestNoAndCreateDateGreaterThanEqualAndCompletionDateLessThanEqualAndRequestType(Date from, Date to, String type);
 }

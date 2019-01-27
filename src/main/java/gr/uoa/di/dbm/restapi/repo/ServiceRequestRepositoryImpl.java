@@ -2,7 +2,6 @@ package gr.uoa.di.dbm.restapi.repo;
 
 import org.bson.BsonType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.geo.Box;
 import org.springframework.data.geo.Point;
@@ -27,14 +26,15 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
         this.mongoTemplate = mongoTemplate;
     }
 
-    public List query1(Date startDate, Date endDate){
+    public List<String> query1(Date startDate, Date endDate){
         MatchOperation matchDates = Aggregation.match(Criteria
                 .where("createDate").gte(startDate).lte(endDate));
         GroupOperation countServiceRequestsByType = Aggregation.group("requestType").count().as("incidents");
         SortOperation sortByIncidentsDesc = Aggregation.sort(new Sort(Direction.DESC, "incidents"));
         ProjectionOperation projectToMatchModel = Aggregation.project()
                 .andExpression("_id").as("requestType")
-                .andExpression("incidents").as("incidents");
+                .andExpression("incidents").as("incidents")
+                .andExclude("_id");
 
         Aggregation aggregation = newAggregation(matchDates, countServiceRequestsByType, sortByIncidentsDesc, projectToMatchModel);
 
@@ -43,19 +43,19 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
         return result.getMappedResults();
     }
 
-    //TODO Date format on results
-    public List query2(Date startDate, Date endDate, String requestType) {
+    public List<String> query2(Date startDate, Date endDate, String requestType) {
 
         MatchOperation matchDatesAndRequestType = Aggregation.match(Criteria
                 .where("createDate").gte(startDate).lte(endDate)
                 .and("requestType").is(requestType));
 
         GroupOperation countServiceRequestsByDate = Aggregation.group("createDate").count().as("incidents");
-        SortOperation sortByDateDesc = Aggregation.sort(new Sort(Direction.DESC, "incidents"));
+        SortOperation sortByDateDesc = Aggregation.sort(new Sort(Direction.ASC, "_id"));
 
         ProjectionOperation projectToMatchModel = Aggregation.project()
-                .andExpression("createDate").as("createDate")
-                .andExpression("incidents").as("incidents");
+                .andExpression("_id").dateAsFormattedString("%Y-%m-%d").as("createDate")
+                .andExpression("incidents").as("incidents")
+                .andExclude("_id");
 
         Aggregation aggregation = newAggregation(matchDatesAndRequestType, countServiceRequestsByDate, sortByDateDesc, projectToMatchModel);
         AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
@@ -63,23 +63,26 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
         return result.getMappedResults();
     }
 
-    public List query4(String requestType) {
+    public List<String> query4(String requestType) {
         MatchOperation matchRequestType = Aggregation.match(Criteria
-                .where("requestType").is(requestType));
+                .where("requestType").is(requestType)
+                .and("location.ward").exists(true).ne(""));
         GroupOperation countServiceRequestsByWard = Aggregation.group("location.ward","requestType").count().as("totalRequests");
-        SortOperation sortByServiceRequests = Aggregation.sort(new Sort(Direction.ASC, "_id.ward","totalRequests"));
+        SortOperation sortByServiceRequests = Aggregation.sort(new Sort(Direction.ASC, "totalRequests"));
+        LimitOperation limitTop3 = Aggregation.limit(3);
 
         ProjectionOperation projectToMatchModel = Aggregation.project()
                 .andExpression("_id.ward").as("ward")
+                .andExpression("_id.requestType").as("requestType")
                 .andExpression("totalRequests").as("totalRequests");
 
-        Aggregation aggregation = newAggregation(matchRequestType, countServiceRequestsByWard, sortByServiceRequests, projectToMatchModel);
+        Aggregation aggregation = newAggregation(matchRequestType, countServiceRequestsByWard, sortByServiceRequests, limitTop3, projectToMatchModel);
         AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
 
         return result.getMappedResults();
     }
 
-    public List query5(Date startDate, Date endDate){
+    public List<String> query5(Date startDate, Date endDate){
 
         //Check for null completion date because abandoned building don't have that field
         MatchOperation matchDates = Aggregation.match(Criteria
@@ -91,7 +94,8 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
 
         ProjectionOperation projectToMatchModel = Aggregation.project()
                 .andExpression("_id").as("requestType")
-                .andExpression("averageCompletionPeriod").as("averageCompletionPeriod");
+                .andExpression("averageCompletionPeriod").as("averageCompletionPeriod")
+                .andExclude("_id");
 
         Aggregation aggregation = newAggregation(matchDates, avgServiceRequestsByTypeOnCompletionPeriod, projectToMatchModel);
 
@@ -100,7 +104,7 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
         return result.getMappedResults();
     }
 
-    public List query6(Date startDate, Double minLat, Double maxLat, Double minLon, Double maxLon) {
+    public List<String> query6(Date startDate, Double minLat, Double maxLat, Double minLon, Double maxLon) {
         Box boundingBox = new Box(new Point(minLon,maxLat), new Point(maxLon, minLat));
 
         MatchOperation matchDateAndLocation = Aggregation.match(Criteria
@@ -113,7 +117,8 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
 
         ProjectionOperation projectToMatchModel = Aggregation.project()
                 .andExpression("_id").as("requestType")
-                .andExpression("incidents").as("incidents");
+                .andExpression("incidents").as("incidents")
+                .andExclude("_id");
 
         Aggregation aggregation = newAggregation(matchDateAndLocation, countServiceRequestsByType, sortByIncidentsDesc, limitOperation, projectToMatchModel);
 
@@ -122,9 +127,7 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
         return result.getMappedResults();
     }
 
-
-    //TODO Bring all fields as result
-    public List query7(Date startDate){
+    public List<String> query7(Date startDate){
 
         //Check for null completion date because abandoned building don't have that field
         MatchOperation matchDates = Aggregation.match(Criteria
@@ -135,8 +138,13 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
 
         LimitOperation limitToOnlyFifty = Aggregation.limit(50);
 
+
         ProjectionOperation projectToMatchModel = Aggregation.project()
-                .andExpression("upvotes").size().as("numberOfUpvotes");
+                .andExpression("_id").as("serviceRequestId")
+                .andExpression("serviceRequestNo").as("serviceRequestNo")
+                .andExpression("requestType").as("requestType")
+                .andExpression("upvotes").size().as("numberOfUpvotes")
+                .andExclude("_id");
 
         Aggregation aggregation = newAggregation(matchDates,projectToMatchModel,sortByUpvotes,limitToOnlyFifty);
 
@@ -146,25 +154,30 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
     }
 
     //TODO recheck!!!!!
-    public List query10(){
+    public List<String> query10(){
         //Check for null completion date because abandoned building don't have that field
         MatchOperation matchType = Aggregation.match(Criteria
                 .where("upvotes").type(BsonType.ARRAY.getValue()));
 
         UnwindOperation unwindUpVotes = Aggregation.unwind("upvotes");
 
-        GroupOperation groupUpVotes = Aggregation.group("_id").addToSet("upvotes.phone").as("distPhones")
+        GroupOperation groupUpVotes = Aggregation.group("_id","serviceRequestNo").addToSet("upvotes.phone").as("distPhones")
                 .addToSet("upvotes.name").as("distVotes");
 
         ProjectionOperation projectToMatchModel = Aggregation.project()
+                .andExpression("_id._id").as("serviceRequestId")
+                .andExpression("_id.serviceRequestNo").as("serviceRequestNo")
                 .andExpression("distPhones").size().as("numberOfPhones")
                 .andExpression("distVotes").size().as("numberOfUpvotes");
-        ProjectionOperation projectionOperation = Aggregation.project("numberOfPhones", "numberOfUpvotes")
-                .andExpression("numberOfPhones==numberOfUpvotes").as("isLess");
+        ProjectionOperation projectionOperation = Aggregation.project("serviceRequestId","serviceRequestNo","numberOfPhones", "numberOfUpvotes")
+                .andExpression("numberOfPhones!=numberOfUpvotes").as("isLess");
 
         MatchOperation matchNumber = Aggregation.match(Criteria.where("isLess").is(true));
 
-        Aggregation aggregation = newAggregation(matchType,unwindUpVotes,groupUpVotes,projectToMatchModel,projectionOperation,matchNumber);
+        ProjectionOperation finalProjection = Aggregation.project("serviceRequestId","serviceRequestNo").andExclude("_id");
+
+
+        Aggregation aggregation = newAggregation(matchType,unwindUpVotes,groupUpVotes,projectToMatchModel,projectionOperation,matchNumber, finalProjection);
 
         AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
 

@@ -4,7 +4,9 @@ import java.io.Serializable;
 public class UpvotedRequest extends ServiceRequest implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    String ward;
+    private String ward;
+
+    public UpvotedRequest(){}
 
     public UpvotedRequest(String id, String ward){
         this.setServiceRequestId(id);
