@@ -43,6 +43,10 @@ public class CitizenRepositoryImpl implements CitizenRepositoryCustom {
     }
 
     public List<String> query9(){
+
+        MatchOperation matchOperation = Aggregation.match(Criteria
+                .where("upvotedRequests.ward").exists(true).ne(""));
+
         UnwindOperation unwindRequests = Aggregation.unwind("upvotedRequests");
         GroupOperation groupObject = Aggregation.group("_id","name","phone")
                 .addToSet("upvotedRequests.ward").as("distset");
@@ -57,7 +61,7 @@ public class CitizenRepositoryImpl implements CitizenRepositoryCustom {
                 .andExpression("distset").size().as("numberOfDistWards")
                 .andExclude("_id");
 
-        Aggregation aggregation = newAggregation(unwindRequests,groupObject,projectToMatchModel,sortByWards,limitToOnlyFifty);
+        Aggregation aggregation = newAggregation(unwindRequests,matchOperation,groupObject,projectToMatchModel,sortByWards,limitToOnlyFifty);
 
         AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "citizen", String.class);
 
@@ -66,7 +70,7 @@ public class CitizenRepositoryImpl implements CitizenRepositoryCustom {
 
     public List<String> query11(String name){
         Query query = new Query();
-        query.addCriteria(Criteria.where("name").in(name));
+        query.addCriteria(Criteria.where("name").is(name).and("upvotedRequests.ward").exists(true).ne(""));
         return mongoTemplate.findDistinct(query, "upvotedRequests.ward", "citizen", String.class);
     }
 }

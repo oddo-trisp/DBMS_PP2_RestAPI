@@ -188,31 +188,23 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
         return result.getMappedResults();
     }
 
-    //TODO recheck!!!!!
     public List<String> query10(){
         //Check for null completion date because abandoned building don't have that field
         MatchOperation matchType = Aggregation.match(Criteria
-                .where("upvotes").type(BsonType.ARRAY.getValue()));
+                .where("upvotes").exists(true).type(BsonType.ARRAY.getValue()));
 
         UnwindOperation unwindUpVotes = Aggregation.unwind("upvotes");
 
-        GroupOperation groupUpVotes = Aggregation.group("_id","serviceRequestNo").addToSet("upvotes.phone").as("distPhones")
-                .addToSet("upvotes.name").as("distVotes");
+        GroupOperation groupUpVotes = Aggregation.group("_id","upvotes.phone").count().as("count");
+
+        MatchOperation matchOperation = Aggregation.match(Criteria.where("count").gt(1));
 
         ProjectionOperation projectToMatchModel = Aggregation.project()
                 .andExpression("_id._id").as("serviceRequestId")
-                .andExpression("_id.serviceRequestNo").as("serviceRequestNo")
-                .andExpression("distPhones").size().as("numberOfPhones")
-                .andExpression("distVotes").size().as("numberOfUpvotes");
-        ProjectionOperation projectionOperation = Aggregation.project("serviceRequestId","serviceRequestNo","numberOfPhones", "numberOfUpvotes")
-                .andExpression("numberOfPhones!=numberOfUpvotes").as("isLess");
+                .andExclude("_id");
 
-        MatchOperation matchNumber = Aggregation.match(Criteria.where("isLess").is(true));
-
-        ProjectionOperation finalProjection = Aggregation.project("serviceRequestId","serviceRequestNo").andExclude("_id");
-
-
-        Aggregation aggregation = newAggregation(matchType,unwindUpVotes,groupUpVotes,projectToMatchModel,projectionOperation,matchNumber, finalProjection);
+        Aggregation aggregation = newAggregation(matchType,unwindUpVotes,groupUpVotes,matchOperation,projectToMatchModel)
+                .withOptions(Aggregation.newAggregationOptions().allowDiskUse(true).build());
 
         AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
 

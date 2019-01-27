@@ -6,7 +6,6 @@ import gr.uoa.di.dbm.restapi.repo.ServiceRequestRepository;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.stereotype.Service;
@@ -61,9 +60,9 @@ public class ParserServiceImpl {
 
     public void parseData() {
         parseCitizens();
-        //graffityRemovalParser();
+        graffityRemovalParser();
         abandonedBuildingsParser();
-        /*abandonedVehiclesParser();
+        abandonedVehiclesParser();
         garbageCartsParser();
         potHolesReportedParser();
         rodentBaitingParser();
@@ -72,7 +71,7 @@ public class ParserServiceImpl {
         trimTreesParser();
         alleyLightsOutParser();
         streetLightsOutAllParser();
-        streetLightsOutOneParser();*/
+        streetLightsOutOneParser();
         citizenRepository.saveAll(citizens);
     }
 
