@@ -101,6 +101,7 @@ public class ParserServiceImpl {
 
             citizens = new ArrayList<>(citizenMap.values());
             citizens = citizenRepository.saveAll(citizens);
+            citizenMap.clear();
         }
         catch(Exception e) {
             e.printStackTrace();

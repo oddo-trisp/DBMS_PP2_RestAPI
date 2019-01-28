@@ -164,7 +164,6 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
 
     public List<String> query7(Date startDate){
 
-        //Check for null completion date because abandoned building don't have that field
         MatchOperation matchDates = Aggregation.match(Criteria
                 .where("createDate").is(startDate)
                 .and("upvotes").type(BsonType.ARRAY.getValue()));
@@ -189,6 +188,30 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
     }
 
     public List<String> query10(){
+        MatchOperation matchType = Aggregation.match(Criteria
+                .where("upvotes.phone").exists(true));
+
+        ProjectionOperation projectToGetDist = Aggregation.project()
+                .andExpression("_id").as("serviceRequestId")
+                .andExpression("upvotes.phone").size().as("realSize")
+                .and("upvotes.phone").unionArrays("upvotes.phone").as("distSet")
+                .andExclude("_id");
+        ProjectionOperation projectToGetDistSize = Aggregation.project("serviceRequestId","realSize")
+                .andExpression("distSet").size().as("distSize");
+        ProjectionOperation projectToGetDiff = Aggregation.project("serviceRequestId","realSize","distSize")
+                .andExpression("realSize!=distSize").as("isDiff");
+
+        MatchOperation matchDiff = Aggregation.match(Criteria.where("isDiff").is(true));
+        ProjectionOperation finalProjection = Aggregation.project("serviceRequestId");
+
+        Aggregation aggregation = newAggregation(matchType,projectToGetDist,projectToGetDistSize,projectToGetDiff,matchDiff,finalProjection);
+
+        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
+
+        return result.getMappedResults();
+    }
+
+    /*public List<String> query10(){
         //Check for null completion date because abandoned building don't have that field
         MatchOperation matchType = Aggregation.match(Criteria
                 .where("upvotes").exists(true).type(BsonType.ARRAY.getValue()));
@@ -209,5 +232,5 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
         AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
 
         return result.getMappedResults();
-    }
+    }*/
 }

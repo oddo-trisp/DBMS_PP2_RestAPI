@@ -47,6 +47,32 @@ public class CitizenRepositoryImpl implements CitizenRepositoryCustom {
         MatchOperation matchOperation = Aggregation.match(Criteria
                 .where("upvotedRequests.ward").exists(true).ne(""));
 
+        ProjectionOperation projectToGetDist = Aggregation.project()
+                .andExpression("_id").as("citizenId")
+                .andExpression("name").as("name")
+                .andExpression("phone").as("phone")
+                .and("upvotedRequests.ward").unionArrays("upvotedRequests.ward").as("distset");
+
+        ProjectionOperation projectToCount = Aggregation.project("citizenId","name","phone")
+                .andExpression("distset").size().as("numberOfDistWards")
+                .andExclude("_id");
+
+        SortOperation sortByWards = Aggregation.sort(new Sort(Sort.Direction.DESC, "numberOfDistWards"));
+        LimitOperation limitToOnlyFifty = Aggregation.limit(50);
+
+
+        Aggregation aggregation = newAggregation(matchOperation,projectToGetDist,projectToCount,sortByWards,limitToOnlyFifty);
+
+        AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "citizen", String.class);
+
+        return result.getMappedResults();
+    }
+
+    /*public List<String> query9(){
+
+        MatchOperation matchOperation = Aggregation.match(Criteria
+                .where("upvotedRequests.ward").exists(true).ne(""));
+
         UnwindOperation unwindRequests = Aggregation.unwind("upvotedRequests");
         GroupOperation groupObject = Aggregation.group("_id","name","phone")
                 .addToSet("upvotedRequests.ward").as("distset");
@@ -61,12 +87,12 @@ public class CitizenRepositoryImpl implements CitizenRepositoryCustom {
                 .andExpression("distset").size().as("numberOfDistWards")
                 .andExclude("_id");
 
-        Aggregation aggregation = newAggregation(unwindRequests,matchOperation,groupObject,projectToMatchModel,sortByWards,limitToOnlyFifty);
+        Aggregation aggregation = newAggregation(matchOperation,unwindRequests,groupObject,projectToMatchModel,sortByWards,limitToOnlyFifty);
 
         AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "citizen", String.class);
 
         return result.getMappedResults();
-    }
+    }*/
 
     public List<String> query11(String name){
         Query query = new Query();
