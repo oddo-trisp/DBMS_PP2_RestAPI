@@ -61,7 +61,7 @@ public class CitizenRepositoryImpl implements CitizenRepositoryCustom {
         LimitOperation limitToOnlyFifty = Aggregation.limit(50);
 
 
-        Aggregation aggregation = newAggregation(matchOperation,projectToGetDist,projectToCount,sortByWards,limitToOnlyFifty);
+        Aggregation aggregation = newAggregation(projectToGetDist,projectToCount,sortByWards,limitToOnlyFifty);
 
         AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "citizen", String.class);
 

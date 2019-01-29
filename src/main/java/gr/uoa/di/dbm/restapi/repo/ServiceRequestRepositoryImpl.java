@@ -1,6 +1,7 @@
 package gr.uoa.di.dbm.restapi.repo;
 
 import com.mongodb.BasicDBObject;
+import org.bson.BSON;
 import org.bson.BsonType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -11,6 +12,7 @@ import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -188,13 +190,13 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
     }
 
     public List<String> query10(){
-        MatchOperation matchType = Aggregation.match(Criteria
-                .where("upvotes.phone").exists(true));
 
+        ConditionalOperators.IfNull ifNull = ConditionalOperators.ifNull("upvotes.phone").then(Collections.EMPTY_LIST.toArray());
+        ProjectionOperation projectionOperation = Aggregation.project("_id").and("upvotes.phone").applyCondition(ifNull);
         ProjectionOperation projectToGetDist = Aggregation.project()
                 .andExpression("_id").as("serviceRequestId")
-                .andExpression("upvotes.phone").size().as("realSize")
-                .and("upvotes.phone").unionArrays("upvotes.phone").as("distSet")
+                .and("phone").size().as("realSize")
+                .and("phone").unionArrays("phone").as("distSet")
                 .andExclude("_id");
         ProjectionOperation projectToGetDistSize = Aggregation.project("serviceRequestId","realSize")
                 .andExpression("distSet").size().as("distSize");
@@ -204,7 +206,8 @@ public class ServiceRequestRepositoryImpl implements ServiceRequestRepositoryCus
         MatchOperation matchDiff = Aggregation.match(Criteria.where("isDiff").is(true));
         ProjectionOperation finalProjection = Aggregation.project("serviceRequestId");
 
-        Aggregation aggregation = newAggregation(matchType,projectToGetDist,projectToGetDistSize,projectToGetDiff,matchDiff,finalProjection);
+        Aggregation aggregation = newAggregation(projectionOperation,projectToGetDist,projectToGetDistSize,projectToGetDiff,matchDiff,finalProjection)
+                .withOptions(Aggregation.newAggregationOptions().allowDiskUse(true).build());
 
         AggregationResults<String> result = mongoTemplate.aggregate(aggregation, "serviceRequest", String.class);
 
